@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Ice Flakes Shader</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="glCanvas"></canvas>
+
+    <script>
+        // Initialize WebGL
+        const canvas = document.getElementById('glCanvas');
+        const gl = canvas.getContext('webgl');
+
+        if (!gl) {
+            alert('WebGL not supported in your browser');
+            throw new Error('WebGL not supported');
+        }
+
+        // Set canvas size to window size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Vertex shader source
+        const vsSource = `
+            attribute vec4 aVertexPosition;
+            void main() {
+                gl_Position = aVertexPosition;
+            }
+        `;
+
+        // Fragment shader source
+        const fsSource = `
+            precision highp float;
+            uniform vec2 uResolution;
+            uniform float uTime;
+            
+            // Function to create a pseudo-random value
+            float random(vec2 st) {
+                return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+            }
+            
+            // Value noise function
+            float noise(vec2 st) {
+                vec2 i = floor(st);
+                vec2 f = fract(st);
+                
+                // Four corners of a tile
+                float a = random(i);
+                float b = random(i + vec2(1.0, 0.0));
+                float c = random(i + vec2(0.0, 1.0));
+                float d = random(i + vec2(1.0, 1.0));
+                
+                // Smooth interpolation
+                vec2 u = f * f * (3.0 - 2.0 * f);
+                
+                return mix(a, b, u.x) +
+                       (c - a) * u.y * (1.0 - u.x) +
+                       (d - b) * u.x * u.y;
+            }
+            
+            // Fractal Brownian Motion for more organic noise
+            float fbm(vec2 st, int octaves) {
+                float value = 0.0;
+                float amplitude = 0.5;
+                float frequency = 1.0;
+                
+                for (int i = 0; i < 10; i++) {
+                    if (i >= octaves) break;
+                    value += amplitude * noise(st * frequency);
+                    frequency *= 2.0;
+                    amplitude *= 0.5;
+                }
+                
+                return value;
+            }
+
+            // Extended snowflake function with more details
+            float snowflake(vec2 p, float size) {
+                // Six-fold symmetry
+                float angle = atan(p.y, p.x);
+                float radius = length(p);
+                
+                // Create six-fold symmetry
+                float symAngle = mod(angle, 2.0 * 3.14159 / 6.0) - 3.14159 / 6.0;
+                vec2 symPoint = vec2(cos(symAngle), sin(symAngle)) * radius;
+                
+                // Base flake shape - hexagonal core
+                float flake = 1.0 - smoothstep(0.0, 0.07 * size, abs(symPoint.x));
+                
+                // Main branch
+                flake += (1.0 - smoothstep(0.0, 0.03 * size, abs(symPoint.y - 0.15 * size))) * 0.7;
+                flake += (1.0 - smoothstep(0.0, 0.02 * size, abs(symPoint.y - 0.30 * size))) * 0.5;
+                flake += (1.0 - smoothstep(0.0, 0.015 * size, abs(symPoint.y - 0.45 * size))) * 0.3;
+                flake += (1.0 - smoothstep(0.0, 0.01 * size, abs(symPoint.y - 0.60 * size))) * 0.2;
+                
+                // Secondary branches - at 0.2 of the main branch
+                float branchX = symPoint.y - 0.2 * size;
+                float branchY = symPoint.x;
+                float branchDist = sqrt(branchX*branchX + branchY*branchY*25.0);
+                flake += (1.0 - smoothstep(0.0, 0.01 * size, branchDist - 0.03 * size)) * 0.3;
+                
+                // More secondary branches - at 0.4 of the main branch
+                branchX = symPoint.y - 0.4 * size;
+                branchY = symPoint.x;
+                branchDist = sqrt(branchX*branchX + branchY*branchY*16.0);
+                flake += (1.0 - smoothstep(0.0, 0.01 * size, branchDist - 0.025 * size)) * 0.2;
+                
+                // Tertiary details - crystal patterns
+                float pattern = fbm(p * 12.0, 3) * 0.1;
+                flake += pattern * smoothstep(size * 0.7, 0.0, radius);
+                
+                // Edge glow effect
+                float edge = smoothstep(size * 0.2, size * 0.21, radius) * (1.0 - smoothstep(size * 0.7, size * 0.71, radius));
+                edge *= 0.3;
+                flake += edge;
+                
+                // Taper to the end with a soft edge
+                flake *= smoothstep(size * 0.95, 0.0, radius);
+                
+                return clamp(flake, 0.0, 1.0);
+            }
+            
+            // Function for animated background
+            vec3 backgroundEffect(vec2 uv, float time) {
+                // Moving plasma-like effect
+                vec2 movement1 = vec2(time * 0.05, time * 0.03);
+                vec2 movement2 = vec2(time * -0.04, time * 0.02);
+                
+                float plasma1 = fbm(uv * 1.5 + movement1, 4);
+                float plasma2 = fbm(uv * 2.5 + movement2, 3);
+                
+                // Combine waves for dynamic pattern
+                float combinedPlasma = (plasma1 + plasma2) * 0.5;
+                
+                // Create color gradients
+                vec3 color1 = vec3(0.0, 0.05, 0.2);  // Deep blue
+                vec3 color2 = vec3(0.1, 0.2, 0.35);  // Medium blue
+                vec3 color3 = vec3(0.0, 0.1, 0.3);   // Royal blue
+                
+                // Mix colors based on plasma value
+                vec3 bgColor = mix(color1, color2, combinedPlasma);
+                bgColor = mix(bgColor, color3, plasma2 * plasma1);
+                
+                // Add subtle pulsing glow
+                float pulse = 0.5 + 0.5 * sin(time * 0.2);
+                vec2 center = vec2(0.5, 0.5) - uv;
+                float dist = length(center);
+                float glow = smoothstep(0.4, 0.0, dist) * 0.2 * pulse;
+                
+                return bgColor + vec3(0.0, 0.05, 0.1) * glow;
+            }
+            
+            void main() {
+                // Normalized coordinates (0 to 1)
+                vec2 uv = gl_FragCoord.xy / uResolution.xy;
+                
+                // Scale to maintain aspect ratio
+                float aspect = uResolution.x / uResolution.y;
+                vec2 scaledUV = vec2(uv.x * aspect, uv.y);
+                
+                // Animated background
+                vec3 backgroundColor = backgroundEffect(uv, uTime);
+                
+                // Initialize color with background
+                vec3 color = backgroundColor;
+                
+                // Reduced number of flakes but make them larger
+                const int NUM_FLAKES = 25;
+                
+                // Draw multiple snowflakes
+                for (int i = 0; i < NUM_FLAKES; i++) {
+                    // Generate unique seed for this flake
+                    float seed = float(i) * 0.1;
+                    
+                    // Randomize position and movement - larger flakes, slower speed
+                    float xOffset = random(vec2(seed, 0.0)) * 2.0 - 1.0;
+                    float size = 0.1 + random(vec2(seed, 1.0)) * 0.1;  // Larger size range
+                    float speed = 0.05 + random(vec2(seed, 2.0)) * 0.08;  // Slower speed
+                    
+                    // Horizontal drift based on sine wave - more gentle
+                    float drift = sin(uTime * (0.05 + random(vec2(seed, 3.0)) * 0.08) + seed * 6.28) * 0.12;
+                    
+                    // Position with time-based movement
+                    float yPos = fract(seed + uTime * speed);
+                    vec2 flakePos = vec2(
+                        xOffset + drift,
+                        1.0 - yPos * 2.0
+                    );
+                    
+                    // Distance from current point to flake center
+                    vec2 delta = scaledUV - flakePos;
+                    
+                    // Draw the detailed flake
+                    float flakeValue = snowflake(delta / size, 1.0);
+                    
+                    // Enhanced shimmer/sparkle effect
+                    float timeOffset = uTime * 3.0 + seed * 20.0;
+                    float sparkleSpeed = 0.5 + random(vec2(seed, 4.0)) * 2.0;
+                    float sparkle = 0.5 + 0.5 * sin(timeOffset * sparkleSpeed);
+                    float shine = fbm(delta * 40.0 + vec2(uTime * 0.2, 0.0), 2) * sparkle * 0.4;
+                    
+                    // Ice blue color with enhanced shimmer
+                    vec3 flakeColor = vec3(0.8, 0.95, 1.0) + vec3(shine);
+                    
+                    // Add subtle colored rim to the flakes
+                    float rim = smoothstep(0.6, 0.9, flakeValue) * (1.0 - smoothstep(0.9, 1.0, flakeValue));
+                    flakeColor += vec3(0.1, 0.3, 0.5) * rim * (0.5 + 0.5 * sin(timeOffset * 0.3));
+                    
+                    // Soft inner glow
+                    float innerGlow = smoothstep(0.4, 0.8, flakeValue) * 0.4;
+                    flakeColor += vec3(0.3, 0.5, 0.8) * innerGlow;
+                    
+                    // Add flake to the scene with layered transparency for a more crystalline look
+                    color = mix(color, flakeColor, flakeValue * 0.85);
+                }
+                
+                // Add depth and atmosphere
+                vec2 center = vec2(aspect/2.0, 0.5) - scaledUV;
+                float vignette = length(center) * 0.5;
+                color = mix(color, color * (1.0 - vignette * 0.5), 0.8);
+                
+                // Add subtle light rays
+                float rays = fbm(uv * 1.0 + uTime * 0.02, 2) * 0.1;
+                color += vec3(0.1, 0.2, 0.4) * rays * (1.0 - vignette);
+                
+                // Final gamma correction for better colors
+                color = pow(color, vec3(0.9));
+                
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        // Create shader program
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compilation error:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            return shader;
+        }
+
+        function initShaderProgram(gl, vsSource, fsSource) {
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+            const shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+            gl.linkProgram(shaderProgram);
+
+            if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+                console.error('Program linking error:', gl.getProgramInfoLog(shaderProgram));
+                return null;
+            }
+            return shaderProgram;
+        }
+
+        const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+
+        // Set up vertices for a full-screen quad
+        const positions = [
+            -1.0, -1.0,
+             1.0, -1.0,
+            -1.0,  1.0,
+             1.0,  1.0
+        ];
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+        // Set up shader attributes and uniforms
+        const programInfo = {
+            program: shaderProgram,
+            attribLocations: {
+                vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+            },
+            uniformLocations: {
+                resolution: gl.getUniformLocation(shaderProgram, 'uResolution'),
+                time: gl.getUniformLocation(shaderProgram, 'uTime'),
+            },
+        };
+
+        // Animation loop
+        let startTime = Date.now();
+        function render() {
+            const currentTime = (Date.now() - startTime) / 1000; // Time in seconds
+
+            // Clear the canvas
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            // Use the shader program
+            gl.useProgram(programInfo.program);
+
+            // Set up attributes
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.vertexAttribPointer(
+                programInfo.attribLocations.vertexPosition,
+                2, // 2 components per vertex
+                gl.FLOAT,
+                false,
+                0,
+                0
+            );
+            gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+
+            // Set uniforms
+            gl.uniform2f(programInfo.uniformLocations.resolution, canvas.width, canvas.height);
+            gl.uniform1f(programInfo.uniformLocations.time, currentTime);
+
+            // Draw
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            // Request the next frame
+            requestAnimationFrame(render);
+        }
+
+        // Start the animation
+        render();
+    </script>
+</body>
+</html>
