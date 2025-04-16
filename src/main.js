@@ -8,7 +8,8 @@ const config = {
     width: 1280,
     height: 720,
     backgroundColor: '#000000',
-    pixelArt: false,
+    pixelArt: true,
+    boardCellSize: 64,
     scene: [
         Start
     ],
