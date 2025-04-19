@@ -1,7 +1,7 @@
-import { Start } from './scenes/Start.js';
+import { Start } from './scenes/Game.js';
 
 const config = {
-    type: Phaser.AUTO,
+    type: Phaser.WEBGL,
     title: 'Overlord Rising',
     description: '',
     parent: 'game-container',
@@ -9,6 +9,13 @@ const config = {
     height: 720,
     backgroundColor: '#000000',
     pixelArt: true,
+    roundPixels: true,    // Avoids sub-pixel rendering
+    antialias: false,     // Disables anti-aliasing
+    // If using WebGL:
+    render: {
+        antialias: false,
+        roundPixels: true,
+    },
     boardCellSize: 64,
     scene: [
         Start
@@ -20,4 +27,3 @@ const config = {
 }
 
 new Phaser.Game(config);
-            

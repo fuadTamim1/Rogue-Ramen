@@ -1,5 +1,6 @@
 import { gameConfig } from './config.js';
 import { Cell } from './Cell.js';
+import { GameManager } from './GameManager.js';
 
 export class Board {
     static preloadAssets(scene) {
@@ -20,93 +21,60 @@ export class Board {
         const startY = (this.screenHeight / 2) - ((h * gameConfig.board.cellSize + gameConfig.board.gap * (h - 1)) / 2);
 
         for (let i = 0; i < w; i++) {
-            cells[i] = [];
             for (let j = 0; j < h; j++) {
                 const x = startX + (gameConfig.board.cellSize + gameConfig.board.gap) * i;
                 const y = startY + (gameConfig.board.cellSize + gameConfig.board.gap) * j;
 
                 const cell = new Cell(this.scene, x, y, i, j);
-                cells[i][j] = cell;
+                cells.push(cell);
             }
+        }
+
+
+        return cells;
+    }
+
+    getCells(withoutPlayerCell = false) {
+        let cells = this.board.cells; // Flattens 2D array to 1D
+
+        if (withoutPlayerCell) {
+            const playerPos = GameManager.player.getPosition();
+            cells = cells.filter(cell => cell.position.x !== playerPos.x || cell.position.y !== playerPos.y);
         }
 
         return cells;
     }
 
-    __CreateCell(startX, startY, i, j) {
-        const x = startX + (gameConfig.board.cellSize + gameConfig.board.gap) * i;
-        const y = startY + (gameConfig.board.cellSize + gameConfig.board.gap) * j;
-
-        const cell = this.scene.add.sprite(x, y, 'cell');
-        cell.setDisplaySize(gameConfig.board.cellSize, gameConfig.board.cellSize);
-
-        cell.isActivated = false;
-        cell.child = null;
-
-        Object.defineProperty(cell, 'hasChild', {
-            get() {
-                return this.child !== null;
-            }
-        });
-
-        cell.hasObstacle = false;
-        cell.position = { x: i, y: j };
-
-        cell.getNeighbors
-
-        getNeighbors = (target, grid) => {
-            cells = [];
-            for (let i = 0; i < grid.length; i++) {
-                for (let i = 0; i < grid.length; i++) {
-                    if (Math.abs(i) - Math.abs(j) == 0) continue;
-                    cells.push(grid[i][j]);
-                }
-            }
-            cells.push(grid[target.x + 1][target.y])
-            return cells;
-        }
-
-        cell.setInteractive()
-            .on('pointerdown', () => {
-                console.log(`Cell at (${i}, ${j}) clicked`, cell);
-                cell.isActivated = !cell.isActivated;
-                cell.hasObstacle = cell.isActivated;
-                cell.setTint(cell.isActivated ? 0xff0000 : 0xffffff);
-                if (cell.hasChild) {
-                    cell.child.die();
-                }
-            })
-            .on('pointerover', () => this.TryHover(cell))
-            .on('pointerout', () => this.TryUnhover(cell));
-
-        return cell;
+    getCell(x, y) {
+        return this.cells.find((c) => c.position.x === x && c.position.y === y);
     }
 
-    TryHover(cell) {
-        if (!cell.isActivated) {
-            cell.setTint(0xaaaaaa);
-        }
+    getCellsCount = () => cells.length;
+
+    getBoardWidth() {
+        const MaxX = Math.max(...this.cells.map((c) => c.position.x));
+        return MaxX + 1
     }
 
-    TryUnhover(cell) {
-        if (!cell.isActivated) {
-            cell.clearTint();
-        }
+    getBoardHigh() {
+        const MaxY = Math.max(...this.cells.map((c) => c.position.y));
+        return MaxY + 1
     }
 
-    activateCell(x, y) {
-        const cell = this.cells[x][y];
-        cell.isActivated = true;
-        cell.setTint(0x00ff00);
-        return cell;
+    HighlightCell(x, y, color) {
+        return this.getCell(x, y).setTint(color);
+    }
+
+    clearHighlight() {
+        return this.cells.forEach(cell => { cell.clearTint() });
     }
 
     resetBoard() {
-        for (let row of this.cells) {
-            for (let cell of row) {
-                cell.isActivated = false;
-                cell.clearTint();
-            }
+        for (let cell of this.cells) {
+            cell.isActivated = false;
+            cell.hasObstacle = false;
+            cell.child = false;
+            cell.clearTint();
         }
     }
 }

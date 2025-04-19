@@ -3,15 +3,15 @@
 export const gameConfig = {
     // Board settings
     board: {
-        cellSize: 64,
-        gap:2,
+        cellSize: 100,
+        gap:0,
         colors: {
             default: 0xffffff,
             hover: 0xaaaaaa,
             active: 0x00ff00
         },
         assets: {
-            cell: 'assets/cell.png',
+            cell: 'assets/cell2.png',
         }
     },
     // Player settings

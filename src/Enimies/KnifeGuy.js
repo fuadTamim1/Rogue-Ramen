@@ -11,6 +11,5 @@ export class KnifeGuy extends Entity {
 
     takeDamage(amount) {
         super.takeDamage(amount);
-        console.log('Enemy1 took damage:', amount);
     }
 }

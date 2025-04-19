@@ -1,8 +1,11 @@
 import { gameConfig } from "./config.js";
+import { GameManager } from "./GameManager.js";
+import { AttackManager } from "./managers/AttackManager.js";
 
 export class Cell extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y, boardX, boardY) {
         super(scene, x, y, 'cell');
+        this.setOrigin(0.5);
         this.scene = scene;
         this.boardX = boardX;
         this.boardY = boardY;
@@ -36,34 +39,41 @@ export class Cell extends Phaser.GameObjects.Sprite {
     }
 
     handleClick() {
-        this.isActivated = !this.isActivated;
-        this.hasObstacle = this.isActivated;
-        this.setTint(this.isActivated ? 0xff0000 : 0xffffff);
-        if (this.hasChild) {
-            this.child.die();
+        if (GameManager.AttackMode && GameManager.targetableCells.includes(this) && GameManager.currentAttack) {
+            this.setTint(0xff0000);
+            GameManager.currentAttack.Execute(this);
+            GameManager.AttackMode = false;
+            this.scene.cameras.main.shake(200, 0.002); // subtle shake on enter
+            // or
+            // this.scene.cameras.main.flash(300, 255, 0, 10); // red flash
+            this.scene.tweens.add({
+                targets: this,
+                scale: 1.4,
+                duration: 100,
+                yoyo: true,
+                ease: 'Quad.easeInOut',
+                onComplete: () => {
+                    AttackManager.exitAttackMode()
+                }
+            });
         }
-        this.scene.tweens.add({
-            targets: this,
-            scale: 1.4,
-            duration: 100,
-            yoyo: true,
-            ease: 'Quad.easeInOut'
-        });
-
     }
 
-
     handleHover(state) {
-        if (!this.hasObstacle) {
-            if (state) {
-                this.setTint(0xaaaaaa);
-            } else {
-                this.setTint(0xffffff);
+        if (GameManager.AttackMode && GameManager.targetableCells.includes(this)) {
+
+            if (!this.hasObstacle) {
+                if (state) {
+                    this.setTint(0xaaffff);
+                } else {
+                    this.setTint(0x00FF00);
+                }
             }
         }
     }
 
-    getNeighbors = function (grid) {
+    getNeighbors() {
+        const board = GameManager.board;
         const neighbors = [];
         const { x, y } = this.position;
         const directions = [
@@ -76,12 +86,14 @@ export class Cell extends Phaser.GameObjects.Sprite {
         for (let dir of directions) {
             const nx = x + dir.dx;
             const ny = y + dir.dy;
-            if (grid[nx]?.[ny] && !grid[nx][ny].hasObstacle) {
-                neighbors.push(grid[nx][ny]);
+            if (board.getCell(nx, ny) && !board.getCell(nx, ny).hasObstacle) {
+                const neighbor = board.getCell(nx, ny);
+                if (neighbor && !neighbor.hasObstacle)
+                    neighbors.push(neighbor);
             }
         }
 
         return neighbors;
-    };
+    }
 
 }

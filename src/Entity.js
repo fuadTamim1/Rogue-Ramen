@@ -4,17 +4,17 @@ import { GameManager } from "./GameManager.js";
 export class Entity extends Phaser.GameObjects.Container {
     constructor(scene, i, j, board, texture) {
         // Get cell coordinates and position
-        const cell = board.cells[i][j];
-        super(scene, cell.x, cell.y); // Center of cell
+        const cell = GameManager.board.getCell(i,j);
+        super(scene, cell.position.x, cell.position.y); // Center of cell
         this.scene = scene;
 
         // Store grid position
         this.board = board;
         this.boardX = i;
         this.boardY = j;
-
+        this.setPosition(cell.x,cell.y)
         // Create internal sprite and add to container
-        this.sprite = scene.add.sprite(0, 0, texture);
+        this.sprite = scene.add.sprite(0,0, texture);
         this.sprite.setDisplaySize(
             gameConfig.board.cellSize * 0.75,
             gameConfig.board.cellSize * 0.75
@@ -37,16 +37,6 @@ export class Entity extends Phaser.GameObjects.Container {
         // Mark cell as occupied
         cell.child = this;
 
-        // tween scal up down idle
-        this.scene.tweens.add({
-            targets: this.sprite,
-            scaleY: 1.2,
-            y:  -5,
-            duration: 500,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
     }
 
     SetPosition(x, y) {
@@ -62,9 +52,9 @@ export class Entity extends Phaser.GameObjects.Container {
         return { i: this.boardX, j: this.boardY };
     }
     moveTo(i, j) {
-        if (!this.board.cells[i] || !this.board.cells[i][j]) return;
-        const targetCell = this.board.cells[i][j];
-        const currentCell = this.board.cells[this.boardX][this.boardY];
+        if (!this.board.getCell(i, j)) return;
+        const targetCell = this.board.getCell(i, j);
+        const currentCell = this.board.getCell(this.boardX, this.boardY);
         if (!targetCell.hasChild) {
             // Update cell states
             currentCell.child = null;
@@ -88,11 +78,11 @@ export class Entity extends Phaser.GameObjects.Container {
     }
 
     getCurrentCell() {
-        return this.board.cells[this.boardX][this.boardY];
+        return this.board.getCell(this.boardX,this.boardY);
     }
 
     die() {
-        this.scene.removeEnemy(this);
+        GameManager.enemyManager.removeEnemy(this);
         const cell = this.getCurrentCell()
         cell.child = null;
 

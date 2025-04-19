@@ -37,7 +37,7 @@ export const AStar = {
 
             closedList.push(current);
 
-            const neighbors = current.getNeighbors(grid);
+            const neighbors = current.getNeighbors();
             for (let neighbor of neighbors) {
                 if (closedList.includes(neighbor) || neighbor.hasObstacle) continue;
 
