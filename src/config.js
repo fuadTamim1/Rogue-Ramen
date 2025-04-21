@@ -2,6 +2,7 @@
 // config.js
 export const gameConfig = {
     // Board settings
+    baseURL: 'Rogue-Ramen/',
     board: {
         cellSize: 100,
         gap: 5,

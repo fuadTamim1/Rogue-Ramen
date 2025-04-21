@@ -22,7 +22,7 @@ export class Start extends Phaser.Scene {
 
     preload() {
 
-        this.load.setBaseURL('Rogue-Ramen/');
+        this.load.setBaseURL(gameConfig.baseURL ?? './');
 
         Board.preloadAssets(this);
         Player.preloadAssets(this);
