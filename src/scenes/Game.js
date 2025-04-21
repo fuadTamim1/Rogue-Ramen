@@ -10,32 +10,39 @@ import { AStar } from '../AI/pathfinding.js';
 import { GameManager } from '../GameManager.js';
 import { Attack } from '../Attack.js';
 import { KnifeAttack } from '../attacks/KnifeAttack.js';
+import { PistolAttack } from '../attacks/PistolAttack.js';
 import { UIAttackBar } from '../ui/UIAttackBar.js';
 import { UIAttackSelect } from '../ui/UIAttackSelect.js';
-import { groupFramesByAnimation, createPhaserAnimations, getIconFrame } from '../helpers/CreateAnimation.js';
 import { enemyManager } from '../managers/EnemyManager.js';
+import { SpriteLoader } from '../addons/sprite/SpriteLoader.js';
 
 export class Start extends Phaser.Scene {
     constructor() {
         super('Start');
     }
-    
+
     preload() {
         Board.preloadAssets(this);
         Player.preloadAssets(this);
-        this.load.json('asepriteData', '../../assets/assets.json');
+
+        this.spriteManager = new SpriteLoader(this);
+        this.spriteManager.preloadSheets(gameConfig.sheets)
+
         this.load.spritesheet('knifeGuy', gameConfig.entites.assets.knifeGuy, { frameWidth: 32, frameHeight: 32 })
-        this.load.atlas('atlas', 'assets/assets.png', 'assets/assets.json')
-        
+        // this.load.once("complete", () => {
+        //     this.spriteManager.createAnimations(gameConfig.sheets)
+        // })
+
     }
-    
+
+   
+
     create() {
         GameManager.scene = this;
-        // getCacheData
-        const asepriteJSON = this.cache.json.get('asepriteData');
-        const grouped = groupFramesByAnimation(asepriteJSON);
-        createPhaserAnimations(this, 'atlas', grouped);
-        Attack.setAnimationData(grouped);
+
+        this.spriteManager.createAnimations(gameConfig.sheets);
+        GameManager.spriteManager = this.spriteManager;
+      
 
         this.setupBoard();
         this.setupGameObjects()
@@ -43,7 +50,7 @@ export class Start extends Phaser.Scene {
         this.lights.setAmbientColor(0xFFFF0F);
         var light = this.lights.addLight(400, 200, 1);
         // var light = this.lights.addLight(x, y, radius, color, intensity);
-        
+
 
         GameManager.enemyManager = new enemyManager(this);
         GameManager.enemyManager.enimes = [];
@@ -68,15 +75,13 @@ export class Start extends Phaser.Scene {
 
         this.player.attacks = [
             new KnifeAttack(this, this.board),
+            new PistolAttack(this, this.board),
         ];
 
         GameManager.UIManager.UIAttackBar.refresh()
     }
 
     setupGameObjects() {
-
-        GameManager.UIManager.UIAttackSelect = new UIAttackSelect(this, 0, 0)
-        GameManager.UIManager.UIAttackBar = new UIAttackBar(this, [])
 
         GameManager.dialog = new DialogSystem(this, {
             width: 600,
@@ -111,6 +116,11 @@ export class Start extends Phaser.Scene {
             S: Phaser.Input.Keyboard.KeyCodes.S,
             D: Phaser.Input.Keyboard.KeyCodes.D
         });
+
+
+        GameManager.UIManager.UIAttackSelect = new UIAttackSelect(this, 0, 0)
+        GameManager.UIManager.UIAttackBar = new UIAttackBar(this, [])
+
     }
 
     setupBoard() {
@@ -131,9 +141,9 @@ export class Start extends Phaser.Scene {
         } else if (this.cursor.left.isDown || this.cursor.A.isDown) {
             this.player.TryMove('l');
         }
+        if (GameManager.UIManager.UIAttackSelect)
+            GameManager.UIManager.UIAttackSelect.update()
     }
 }
 
 // // Show icon
-// const knifeIconFrame = getIconFrame(grouped, 'Knife attack');
-// this.add.image(50, 50, 'atlas', knifeIconFrame);

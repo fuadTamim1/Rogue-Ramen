@@ -5,5 +5,7 @@
  */
 
  export class EnemyAI{
-
+    constructor() {
+        
+    }
  }

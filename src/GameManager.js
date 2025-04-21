@@ -13,6 +13,7 @@ export const GameManager = {
         UIAttackBar: null,
         UIAttackSelect: null,
     },
+    spriteManager: null,
     DialogSystem: null,
     incrementMove() {
         this.moveCount++;

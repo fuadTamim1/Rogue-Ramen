@@ -1,0 +1,146 @@
+{ "frames": {
+   "11111111111111 #Sniper 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 1.aseprite": {
+    "frame": { "x": 48, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 2.aseprite": {
+    "frame": { "x": 96, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 3.aseprite": {
+    "frame": { "x": 144, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 4.aseprite": {
+    "frame": { "x": 192, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 5.aseprite": {
+    "frame": { "x": 240, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 6.aseprite": {
+    "frame": { "x": 288, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 7.aseprite": {
+    "frame": { "x": 336, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 8.aseprite": {
+    "frame": { "x": 384, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 9.aseprite": {
+    "frame": { "x": 432, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 10.aseprite": {
+    "frame": { "x": 480, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 11.aseprite": {
+    "frame": { "x": 528, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 12.aseprite": {
+    "frame": { "x": 576, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   },
+   "11111111111111 #Sniper 13.aseprite": {
+    "frame": { "x": 624, "y": 0, "w": 48, "h": 43 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 43 },
+    "sourceSize": { "w": 48, "h": 43 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.11-x64",
+  "format": "RGBA8888",
+  "size": { "w": 672, "h": 43 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "Idle", "from": 0, "to": 8, "direction": "forward", "color": "#000000ff" },
+   { "name": "move", "from": 9, "to": 14, "direction": "forward", "color": "#000000ff" },
+   { "name": "Knife attack", "from": 15, "to": 20, "direction": "forward", "color": "#000000ff" },
+   { "name": "pistol", "from": 21, "to": 26, "direction": "forward", "color": "#000000ff" },
+   { "name": "shotgun", "from": 27, "to": 37, "direction": "forward", "color": "#000000ff" },
+   { "name": "Sniper", "from": 38, "to": 51, "direction": "forward", "color": "#000000ff" },
+   { "name": "grenade", "from": 52, "to": 65, "direction": "forward", "color": "#000000ff" },
+   { "name": "teleport in", "from": 66, "to": 74, "direction": "forward", "color": "#000000ff" },
+   { "name": "teleport out", "from": 75, "to": 85, "direction": "forward", "color": "#000000ff" },
+   { "name": "health", "from": 86, "to": 94, "direction": "forward", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "charac", "opacity": 255, "blendMode": "normal" },
+   { "name": "health effect", "opacity": 255, "blendMode": "normal" },
+   { "name": "teleport effect", "opacity": 255, "blendMode": "normal" },
+   { "name": "shotgun", "opacity": 255, "blendMode": "normal" },
+   { "name": "Pistol", "opacity": 255, "blendMode": "normal" },
+   { "name": "sniper", "opacity": 255, "blendMode": "normal" },
+   { "name": "grenade", "opacity": 255, "blendMode": "normal" },
+   { "name": "Knife ", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

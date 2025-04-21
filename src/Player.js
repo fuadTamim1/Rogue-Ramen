@@ -4,10 +4,7 @@ import { GameManager } from "./GameManager.js";
 export class Player extends Phaser.GameObjects.Sprite {
 
     static preloadAssets(scene) {
-        const assets = gameConfig.player.assets;
-        // The atlas is already loaded in the scene's preload method
-        // We can keep the original spritesheet as fallback
-        scene.load.spritesheet('player', assets.player, { frameWidth: 50, frameHeight: 40 });
+        
     }
 
     constructor(scene, x = 0, y = 0, board = null) {
@@ -52,8 +49,6 @@ export class Player extends Phaser.GameObjects.Sprite {
             gameConfig.board.cellSize * scale
         );
 
-        // Disable smoothing (if using WebGL)
-        this.setTexture('atlas', 'character aniamtion export #Idle 0.aseprite');
         this.setScale(scale); // Alternative to setDisplaySize
         // Set up animation completion listener once
         this.on('animationcomplete', this.handleAnimationComplete, this);
@@ -63,15 +58,9 @@ export class Player extends Phaser.GameObjects.Sprite {
     }
 
     playIdle() {
-        // First check if texture is ready
-        if (!this.scene.textures.exists('atlas')) {
-            console.warn('Atlas texture not ready yet');
-            return;
-        }
-
         // Check if animation exists (Phaser 3.88 compatible check)
-        if (this.scene.anims.anims.entries.hasOwnProperty('Idle')) {
-            this.play('Idle', true);
+        if (this.scene.anims.anims.entries.hasOwnProperty('idle')) {
+            this.play('idle', true);
         } else {
             console.warn('Idle animation not found, using fallback frame');
             // Use direct frame reference
@@ -81,7 +70,7 @@ export class Player extends Phaser.GameObjects.Sprite {
 
     handleAnimationComplete(animation) {
         // When movement or attack animations complete, go back to idle
-        if (animation.key === 'mvoe' || animation.key === 'Knife attack') {
+        if (animation.key === 'move' || animation.key === 'Knife attack') {
             this.playIdle();
         }
     }
@@ -144,10 +133,10 @@ export class Player extends Phaser.GameObjects.Sprite {
         // Finally move if all conditions pass
         if (canMove) {
             // Play walking animation before movement
-            if (this.scene.anims.exists('mvoe')) {
-                this.play('mvoe', true);
+            if (this.scene.anims.exists('move')) {
+                this.play('move', true);
             } else {
-                console.warn("Animation 'mvoe' not found!");
+                console.warn("Animation 'move' not found!");
             }
             this.__move(dir);
         }
@@ -190,10 +179,13 @@ export class Player extends Phaser.GameObjects.Sprite {
                 targets: this,
                 x: cell.x,
                 y: cell.y,
-                duration: 400, // milliseconds
-                ease: 'Power2',
+                duration: 750, // milliseconds
+                ease: 'liner',
                 onComplete: () => {
                     this.isMoving = false;
+                    GameManager.events.emit("new_move_completed");
+                    this.stop();
+                    this.playIdle()
                     // We don't need to manually set the animation here
                     // The animation complete handler will take care of that
                 }
@@ -222,7 +214,9 @@ export class Player extends Phaser.GameObjects.Sprite {
             });
         }
     }
-
+    getWorldPosition() {
+        return { x: this.x, y: this.y };
+    }
     getPosition() {
         return { x: this.boardX, y: this.boardY };
     }

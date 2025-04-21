@@ -43,7 +43,6 @@ export class Cell extends Phaser.GameObjects.Sprite {
             this.setTint(0xff0000);
             GameManager.currentAttack.Execute(this);
             GameManager.AttackMode = false;
-            this.scene.cameras.main.shake(200, 0.002); // subtle shake on enter
             // or
             // this.scene.cameras.main.flash(300, 255, 0, 10); // red flash
             this.scene.tweens.add({

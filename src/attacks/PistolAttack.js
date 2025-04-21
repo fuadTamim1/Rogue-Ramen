@@ -1,22 +1,21 @@
 import { Attack } from "../Attack.js";
 import { GameManager } from '../GameManager.js';
 
-export class KnifeAttack extends Attack {
+export class PistolAttack extends Attack {
     constructor(scene, board) {
         super(
             {
-                name: "Knife Attack",
-                description: "A swift and deadly attack with a knife.",
-                key: "knife",
+                name: "Pistol Attack",
+                description: "A swift and deadly attack with a pistol.",
+                key: "pistol",
                 lvl: 1,
-                cooldown: 1,
-                damage: 20
+                cooldown: 2,
+                damage: 60
             },
             scene,
             board
         );
     }
-
     getTargetableCells() {
         const playerCell = GameManager.player.getCurrentCell();
         let targetable_cells = [];

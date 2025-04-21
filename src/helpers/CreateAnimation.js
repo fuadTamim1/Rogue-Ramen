@@ -58,13 +58,6 @@ export function createPhaserAnimations(scene, textureKey, groupedAnimations) {
     }
 }
 
-// export function getIconFrame(groupedFrames, animName) {
-//     const animGroup = groupedFrames[animName];
-//     if (!animGroup || animGroup.length === 0) return null;
-//     return animGroup[0].name; // This is the frame name you can use in Phaser's Image or Sprite
-// }
-
-// In CreateAnimation.js
 export function getIconFrame(groupedFrames, animName) {
     if (!groupedFrames[animName] || groupedFrames[animName].length === 0) {
         console.warn(`No frames found for animation: ${animName}`);
@@ -73,3 +66,5 @@ export function getIconFrame(groupedFrames, animName) {
     // Return the first frame's name
     return groupedFrames[animName][0].name; 
 }
+
+// new Aniam system

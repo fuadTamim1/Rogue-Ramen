@@ -72,6 +72,13 @@ export class Entity extends Phaser.GameObjects.Container {
 
     takeDamage(amount) {
         this.hp -= amount;
+        this.scene.tweens.add({
+            targets: this.sprite,
+            alpha: 0.3,
+            yoyo: true,
+            repeat: 3,
+            duration: 100
+          });
         if (this.hp <= 0) {
             this.die();
         }
