@@ -8,7 +8,6 @@ import { KnifeGuy } from '../Enimies/KnifeGuy.js';
 import { gameConfig } from '../config.js';
 import { AStar } from '../AI/pathfinding.js';
 import { GameManager } from '../GameManager.js';
-import { Attack } from '../Attack.js';
 import { KnifeAttack } from '../attacks/KnifeAttack.js';
 import { PistolAttack } from '../attacks/PistolAttack.js';
 import { UIAttackBar } from '../ui/UIAttackBar.js';
@@ -22,6 +21,9 @@ export class Start extends Phaser.Scene {
     }
 
     preload() {
+
+        this.load.setBaseURL('Rogue-Ramen/');
+
         Board.preloadAssets(this);
         Player.preloadAssets(this);
 
