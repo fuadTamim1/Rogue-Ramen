@@ -4,30 +4,20 @@ import { GameManager } from "./GameManager.js";
 export class Player extends Phaser.GameObjects.Sprite {
 
     static preloadAssets(scene) {
-        
+
     }
 
     constructor(scene, x = 0, y = 0, board = null) {
         // Calculate initial position
-        let initialX, initialY;
+        let initialX = x, initialY = y;
         // In Player constructor
-        scene.time.delayedCall(100, () => this.playIdle());
-        if (board && board.getCell(x, y)) {
-            // Get the cell position
-            const cell = board.getCell(x, y);
-            initialX = cell.x;
-            initialY = cell.y;
-        } else {
-            // Fallback if no board is provided
-            const cellSize = gameConfig.board.cellSize;
-            initialX = x * cellSize + cellSize / 2;
-            initialY = y * cellSize + cellSize / 2;
-        }
+      
 
         super(scene, initialX, initialY, 'atlas');
+        
         // Set origin to bottom center (0.5, 1)
         this.setOrigin(0.5, .75);
-
+        this.setDepth(10)
         // Add this sprite to the scene
         scene.add.existing(this);
 
@@ -36,14 +26,14 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.screenWidth = scene.cameras.main.width;
         this.screenHeight = scene.cameras.main.height;
         this.board = board; // Reference to the board
-        this.boardX = x;
-        this.boardY = y;
+   
         this.facingRight = true;
         this.facingLeft = false;
         this.attacks = [];
         this.isMoving = false;
-
-        const scale = 3; // Must be integer (1, 2, 3, etc.)
+        this.boardX = x;
+        this.boardY = y;
+        const scale = 4; // Must be integer (1, 2, 3, etc.)
         this.setDisplaySize(
             gameConfig.board.cellSize * scale,
             gameConfig.board.cellSize * scale
@@ -52,6 +42,10 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.setScale(scale); // Alternative to setDisplaySize
         // Set up animation completion listener once
         this.on('animationcomplete', this.handleAnimationComplete, this);
+
+        this.hp = 1000;
+
+        this.SetupEvents()
 
         // Explicitly start the idle animation - make sure this matches your atlas frame tag
         this.playIdle();
@@ -75,14 +69,42 @@ export class Player extends Phaser.GameObjects.Sprite {
         }
     }
 
+    loadAttack(Attack) {
+        this.attacks.push(Attack)
+
+        GameManager.UIManager.UIAttackBar.refresh()
+    }
+
     SetPosition(x, y) {
+        let initialX, initialY;
         this.boardX = x;
         this.boardY = y;
-        this.x = x;
-        this.y = y;
+        if (this.board && this.board.getCell(x, y)) {
+            // Get the cell position
+            const cell = this.board.getCell(x, y);
+            if (cell.hasChild) {
+                console.warn(`can't place player at cell: (${cell.x},${cell.y}) it's taken by another object.`)
+                return;
+            }
+            initialX = cell.x;
+            initialY = cell.y;
+
+            cell.child = this;
+      
+            console.log(cell.boardX,cell.boardY)
+        } else {
+            // Fallback if no board is provided
+            const cellSize = gameConfig.board.cellSize;
+            initialX = x * cellSize + cellSize / 2;
+            initialY = y * cellSize + cellSize / 2;
+        }
+        this.x = initialX;
+        this.y = initialY;
+       
     }
 
     TryMove(dir = 'r') {
+        console.log(this.boardX,this.boardY)
         if (this.isMoving) return;
         dir = dir.toLowerCase();
 
@@ -115,7 +137,7 @@ export class Player extends Phaser.GameObjects.Sprite {
             if (!this.board.getCell(this.boardX, this.boardY)) {
                 canMove = false;
             }
-            if (!(nextX >= 0 && nextX < this.board.getBoardWidth() && nextY >= 0 && nextY < this.board.getBoardHigh())) {
+            if (!(nextX >= 0 && nextX < this.board.getBoardWidth() && nextY >= 0 && nextY < this.board.getBoardHight())) {
                 canMove = false;
             }
         }
@@ -141,10 +163,27 @@ export class Player extends Phaser.GameObjects.Sprite {
             this.__move(dir);
         }
     }
+    takeDamage(amount) {
+        this.hp -= amount;
+        this.scene.tweens.add({
+            targets: this,
+            alpha: 0.3,
+            yoyo: true,
+            repeat: 3,
+            duration: 100
+        });
+        if (this.hp <= 0) {
+            this.die();
+        }
+    }
 
+    die() {
+        alert("you die!")
+        this.destroy(); // Destroys container and all children
+    }
     __move(dir) {
-        console.log(`move ${dir} from: (${this.boardX}, ${this.boardY})`);
-
+        // console.log(`move ${dir} from: (${this.boardX}, ${this.boardY})`);
+        this.getCurrentCell().child = null;
         switch (dir.toLowerCase()) {
             case 'u':
                 this.boardY -= 1;
@@ -154,16 +193,14 @@ export class Player extends Phaser.GameObjects.Sprite {
                 break;
             case 'r':
                 this.boardX += 1;
-                console.log(`move right`);
-
                 break;
             case 'l':
                 this.boardX -= 1;
                 break;
         }
-        console.log(`move from: (${this.boardX}, ${this.boardY})`);
+        this.getCurrentCell().child = this;
+        // console.log(`move from: (${this.boardX}, ${this.boardY})`);
 
-        GameManager.incrementMove();
         this.__UpdateSpritePosition();
         return;
     }
@@ -184,6 +221,8 @@ export class Player extends Phaser.GameObjects.Sprite {
                 onComplete: () => {
                     this.isMoving = false;
                     GameManager.events.emit("new_move_completed");
+                    GameManager.incrementMove();
+
                     this.stop();
                     this.playIdle()
                     // We don't need to manually set the animation here
@@ -195,7 +234,7 @@ export class Player extends Phaser.GameObjects.Sprite {
             // Fallback calculation
             const cellSize = gameConfig.board.cellSize;
             const startX = (this.screenWidth / 2) - ((this.board?.getBoardWidth() * cellSize) / 2);
-            const startY = (this.screenHeight / 2) - ((this.board?.getBoardHigh() * cellSize) / 2);
+            const startY = (this.screenHeight / 2) - ((this.board?.getBoardHight() * cellSize) / 2);
 
             const newX = startX + this.boardX * cellSize + cellSize / 2;
             const newY = startY + this.boardY * cellSize + cellSize / 2;
@@ -223,6 +262,26 @@ export class Player extends Phaser.GameObjects.Sprite {
 
     getCurrentCell() {
         return this.board.getCell(this.boardX, this.boardY);
+    }
+
+    SetupEvents() {
+        GameManager.events.on('newMove', (moveCount) => {
+            if (moveCount % 2 == 0) {
+                this.attacks.forEach(attack => {
+                    attack.increaseCoolDown();
+                });
+            }
+        });
+    }
+
+    TryAttack(Attack, target) {
+        if (this.attacks.includes(Attack)) {
+            Attack.Execute(this.getCurrentCell(), target);
+            GameManager.AttackMode = false;
+            this.scene.time.delayedCall(300, () => {
+                GameManager.incrementMove();
+            })
+        }
     }
 
     TryUsePower() {

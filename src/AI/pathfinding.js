@@ -1,6 +1,20 @@
+import { GameManager } from "../GameManager.js";
+
 export const AStar = {
-    findPath(start, target, grid) {
-        if(!target) return null;
+    getDistance(a, b) {
+        const dx = Math.abs(a.position.x - b.position.x);
+        const dy = Math.abs(a.position.y - b.position.y);
+        return dx + dy;
+    },
+
+    getPathDistance(start, target, grid = GameManager.board.cells) {
+        const path = this.findPath(start, target, grid);
+        if (!path || path.length === 0) return -1; // or null/undefined if preferred
+        return path.length - 1; // number of steps, not including the starting cell
+    },
+
+    findPath(start, target, grid = GameManager.board.cells) {
+        if (!target) return null;
 
         const openList = [];
         const closedList = [];

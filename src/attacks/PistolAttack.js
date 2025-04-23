@@ -1,4 +1,4 @@
-import { Attack } from "../Attack.js";
+import { Attack } from "../Interfaces/Attack.js";
 import { GameManager } from '../GameManager.js';
 
 export class PistolAttack extends Attack {
@@ -16,14 +16,14 @@ export class PistolAttack extends Attack {
             board
         );
     }
-    getTargetableCells() {
-        const playerCell = GameManager.player.getCurrentCell();
+    getTargetableCells(currentCell) {
+
         let targetable_cells = [];
-        targetable_cells = playerCell.getNeighbors();
+        targetable_cells = currentCell.getNeighbors(2);
         return targetable_cells;
     }
 
-    Execute(cell) {
-        super.Execute(cell);
+    Execute(current, target) {
+        super.Execute(current,target);
     }
 }

@@ -34,6 +34,12 @@ export class Board {
         return cells;
     }
 
+    setConfig(width, height) {
+        this.removeBoard();
+        this.cells = this.generate(width, height);
+        console.log(this.cells)
+    }
+
     getCells(withoutPlayerCell = false) {
         let cells = this.board.cells; // Flattens 2D array to 1D
 
@@ -50,19 +56,32 @@ export class Board {
     }
 
     getCellsCount = () => cells.length;
+    areCellsEqual(a, b) {
+        return a.boardX === b.boardX && a.boardY === b.boardY;
+    }
+
+    getRandomCell(empty = false) {
+        const validCells = this.cells.filter((c) => !(c.hasChild || c.hasObstacle) == empty);
+        const randomCell = validCells[Math.floor(Math.random() * validCells.length)];
+        return randomCell;
+    }
 
     getBoardWidth() {
         const MaxX = Math.max(...this.cells.map((c) => c.position.x));
         return MaxX + 1
     }
 
-    getBoardHigh() {
+    getBoardHight() {
         const MaxY = Math.max(...this.cells.map((c) => c.position.y));
         return MaxY + 1
     }
 
     HighlightCell(x, y, color) {
         return this.getCell(x, y).setTint(color);
+    }
+
+    HighlightCells(cells, color) {
+        return cells.forEach((c) => c.setTint(color));
     }
 
     clearHighlight() {
@@ -76,5 +95,14 @@ export class Board {
             cell.child = false;
             cell.clearTint();
         }
+    }
+
+    removeBoard() {
+        for (let cell of this.cells) {
+            if (cell && cell.active) {
+                cell.destroy();
+            }
+        }
+        this.cells = []
     }
 }

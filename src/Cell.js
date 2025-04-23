@@ -1,5 +1,7 @@
 import { gameConfig } from "./config.js";
 import { GameManager } from "./GameManager.js";
+import { helper } from "./helpers/helper.js";
+import { SelectPaterns } from "./helpers/SelectPatterns.js";
 import { AttackManager } from "./managers/AttackManager.js";
 
 export class Cell extends Phaser.GameObjects.Sprite {
@@ -41,8 +43,7 @@ export class Cell extends Phaser.GameObjects.Sprite {
     handleClick() {
         if (GameManager.AttackMode && GameManager.targetableCells.includes(this) && GameManager.currentAttack) {
             this.setTint(0xff0000);
-            GameManager.currentAttack.Execute(this);
-            GameManager.AttackMode = false;
+            GameManager.player.TryAttack(GameManager.currentAttack, this);
             // or
             // this.scene.cameras.main.flash(300, 255, 0, 10); // red flash
             this.scene.tweens.add({
@@ -71,26 +72,32 @@ export class Cell extends Phaser.GameObjects.Sprite {
         }
     }
 
-    getNeighbors() {
-        const board = GameManager.board;
-        const neighbors = [];
-        const { x, y } = this.position;
-        const directions = [
-            { dx: 0, dy: -1 }, // up
-            { dx: 0, dy: 1 },  // down
-            { dx: -1, dy: 0 }, // left
-            { dx: 1, dy: 0 }   // right
-        ];
-
-        for (let dir of directions) {
-            const nx = x + dir.dx;
-            const ny = y + dir.dy;
-            if (board.getCell(nx, ny) && !board.getCell(nx, ny).hasObstacle) {
-                const neighbor = board.getCell(nx, ny);
-                if (neighbor && !neighbor.hasObstacle)
-                    neighbors.push(neighbor);
-            }
+    getNeighbors(range = 1, type = '+') {
+        let neighbors = [];
+        switch (type) {
+            case '+':
+                neighbors = SelectPaterns.plusShape(this, range)
+                break;
+            case '@':
+                neighbors = SelectPaterns.SquareShape(this, range)
+                break;
+            case ']':
+                neighbors = SelectPaterns.LineShape(this, GameManager.player.getCurrentCell(), range)
+            case '[':
+                neighbors = SelectPaterns.LineGroupShape(this, GameManager.player.getCurrentCell())
+            default:
+                neighbors = SelectPaterns.plusShape(this)
+                break;
         }
+
+        helper.removeCell(this, neighbors);
+
+        neighbors.forEach((neighbor) => {
+            if (neighbor && neighbor.hasObstacle)
+                helper.removeCell(neighbor, neighbors);
+
+        });
+
 
         return neighbors;
     }

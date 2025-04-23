@@ -99,7 +99,7 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
                 this.style.buttonSize / 2 * UIAttackBar.BUTTON_SCALE + 8,
                 attack.name,
                 {
-                    fontFamily: 'Arial',
+                    fontFamily: 'Pixelify Sans',
                     fontSize: '16px',
                     color: '#FFFFFF'
                 }

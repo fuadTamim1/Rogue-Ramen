@@ -1,3 +1,4 @@
+
 export const GameManager = {
     player: null,
     board: null,
@@ -8,18 +9,22 @@ export const GameManager = {
     currentAttack: null,
     targetableCells: [],
     scene: null,
-    events: new Phaser.Events.EventEmitter(),
     UIManager: {
         UIAttackBar: null,
         UIAttackSelect: null,
     },
     spriteManager: null,
     DialogSystem: null,
+    LevelManager: null,
+    WaveManager: null,
+    CurrentLevel: 0,
+
     incrementMove() {
         this.moveCount++;
         this.events.emit('newMove', this.moveCount);
     },
-
+    
+    events: new Phaser.Events.EventEmitter(),
     reset() {
         this.moveCount = 0;
     }

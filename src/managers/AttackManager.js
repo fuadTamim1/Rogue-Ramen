@@ -3,21 +3,25 @@ import { GameManager } from "../GameManager.js";
 
 export const AttackManager = {
     enableAttackMode(Attack) {
-        GameManager.AttackMode = true;
-        GameManager.allowToMove = false;
-        GameManager.currentAttack = Attack;
-        GameManager.UIManager.UIAttackSelect.show()
-        const board = GameManager.board;
+        if (Attack.cooldown >= Attack.cooldown_max) {
+            GameManager.AttackMode = true;
+            GameManager.allowToMove = false;
+            GameManager.currentAttack = Attack;
+            GameManager.UIManager.UIAttackSelect.show()
+            const board = GameManager.board;
 
-        board.clearHighlight();
-        GameManager.UIManager.UIAttackBar.hide()
+            board.clearHighlight();
+            GameManager.UIManager.UIAttackBar.hide()
 
-        const targetable_cells = Attack.getTargetableCells()
-        targetable_cells.forEach(cell => {
-            board.HighlightCell(cell.boardX, cell.boardY, 0x00FF00)
-        });
-        GameManager.targetableCells = targetable_cells;
-        AttackManager.CameraAttackMode(true);
+            const targetable_cells = Attack.getTargetableCells(GameManager.player.getCurrentCell())
+            targetable_cells.forEach(cell => {
+                board.HighlightCell(cell.boardX, cell.boardY, 0x00FF00)
+            });
+            GameManager.targetableCells = targetable_cells;
+            AttackManager.CameraAttackMode(true);
+        }else{
+            // show refuse behaivoir
+        }
     },
 
     exitAttackMode() {
@@ -38,7 +42,7 @@ export const AttackManager = {
         if (!camera) return;
 
         if (state) {
-            console.log("Timer scale: " + scene.time.timeScale);
+            // console.log("Timer scale: " + scene.time.timeScale);
             scene.tweens.add({
                 targets: camera,
                 duration: 400,

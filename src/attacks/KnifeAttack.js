@@ -1,4 +1,4 @@
-import { Attack } from "../Attack.js";
+import { Attack } from "../Interfaces/Attack.js";
 import { GameManager } from '../GameManager.js';
 
 export class KnifeAttack extends Attack {
@@ -9,7 +9,7 @@ export class KnifeAttack extends Attack {
                 description: "A swift and deadly attack with a knife.",
                 key: "knife",
                 lvl: 1,
-                cooldown: 1,
+                cooldown: 2,
                 damage: 20
             },
             scene,
@@ -17,14 +17,13 @@ export class KnifeAttack extends Attack {
         );
     }
 
-    getTargetableCells() {
-        const playerCell = GameManager.player.getCurrentCell();
+    getTargetableCells(currentCell) {
         let targetable_cells = [];
-        targetable_cells = playerCell.getNeighbors();
+        targetable_cells = currentCell.getNeighbors();
         return targetable_cells;
     }
 
-    Execute(cell) {
-        super.Execute(cell);
+    Execute(current,target) {
+        super.Execute(current,target);
     }
 }

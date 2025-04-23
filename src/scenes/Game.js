@@ -14,10 +14,30 @@ import { UIAttackBar } from '../ui/UIAttackBar.js';
 import { UIAttackSelect } from '../ui/UIAttackSelect.js';
 import { enemyManager } from '../managers/EnemyManager.js';
 import { SpriteLoader } from '../addons/sprite/SpriteLoader.js';
+import { ShotgunAttack } from '../attacks/ShotgunAttack.js';
+import { SniperAttack } from '../attacks/SniperAttack.js';
+import { GrendaeAttack } from '../attacks/GrenadeAttack.js';
+import { PhaserUI } from '../../libs/PhaserUI.js';
+import { LevelManager } from '../managers/LevelManager.js';
+import { WaveManager } from '../managers/WaveManager.js';
+import { level1 } from '../data/levels.js';
 
-export class Start extends Phaser.Scene {
+/**
+ * 
+   this.player.attacks = [
+            new KnifeAttack(this, this.board),
+            new PistolAttack(this, this.board),
+            new ShotgunAttack(this, this.board),
+            new SniperAttack(this, this.board),
+            new GrendaeAttack(this, this.board)
+        ];
+
+        GameManager.UIManager.UIAttackBar.refresh()
+ */
+
+export class Game extends Phaser.Scene {
     constructor() {
-        super('Start');
+        super('Game');
     }
 
     preload() {
@@ -31,60 +51,27 @@ export class Start extends Phaser.Scene {
         this.spriteManager.preloadSheets(gameConfig.sheets)
 
         this.load.spritesheet('knifeGuy', gameConfig.entites.assets.knifeGuy, { frameWidth: 32, frameHeight: 32 })
-        // this.load.once("complete", () => {
-        //     this.spriteManager.createAnimations(gameConfig.sheets)
-        // })
-
     }
 
-   
+
 
     create() {
+
         GameManager.scene = this;
+
+        this.ui = new PhaserUI(this);
 
         this.spriteManager.createAnimations(gameConfig.sheets);
         GameManager.spriteManager = this.spriteManager;
-      
+
 
         this.setupBoard();
-        this.setupGameObjects()
-        this.lights.enable();
-        this.lights.setAmbientColor(0xFFFF0F);
-        var light = this.lights.addLight(400, 200, 1);
-        // var light = this.lights.addLight(x, y, radius, color, intensity);
+        this.setupGameObjects();
+        this.StartGame();
 
-
-        GameManager.enemyManager = new enemyManager(this);
-        GameManager.enemyManager.enimes = [];
-        GameManager.enemyManager.enimes.push(new KnifeGuy(this, 3, 3, this.board));
-
-
-        // Pathfinding usage example
-        GameManager.events.on('newMove', (moveCount) => {
-            this.board.clearHighlight();
-            if (GameManager.enemyManager.enimes[0])
-                var path = AStar.findPath(this.board.getCell(GameManager.enemyManager.enimes[0].boardX, GameManager.enemyManager.enimes[0].boardY), this.board.getCell(this.player.gridY, this.player.gridX), this.board.cells);
-            if (path) {
-                path.forEach(cell => {
-                    cell.setTint(0x0000ff); // for example, show path
-                });
-                GameManager.enemyManager.enimes[0].moveTo(path[1].boardX, path[1].boardY)
-            } else {
-                console.log("No path found");
-            }
-        });
-
-
-        this.player.attacks = [
-            new KnifeAttack(this, this.board),
-            new PistolAttack(this, this.board),
-        ];
-
-        GameManager.UIManager.UIAttackBar.refresh()
     }
 
     setupGameObjects() {
-
         GameManager.dialog = new DialogSystem(this, {
             width: 600,
             height: 150,
@@ -92,7 +79,7 @@ export class Start extends Phaser.Scene {
             y: this.cameras.main.height - 100,
             backgroundColor: 0x222222,
             borderColor: 0x00ff00,
-            defaultFont: 'Arial',
+            defaultFont: 'Pixelify Sans',
             defaultFontSize: 20,
             defaultColor: '#FFFFFF',
             typewriterSpeed: 30,
@@ -104,7 +91,7 @@ export class Start extends Phaser.Scene {
         });
 
         GameManager.dialog.createStyle('sci-fi', SciFiTheme);
-        this.player = new Player(this, 1, 1, this.board);
+        this.player = new Player(this, 4, 4, this.board);
 
         GameManager.player = this.player;
 
@@ -116,22 +103,29 @@ export class Start extends Phaser.Scene {
             W: Phaser.Input.Keyboard.KeyCodes.W,
             A: Phaser.Input.Keyboard.KeyCodes.A,
             S: Phaser.Input.Keyboard.KeyCodes.S,
-            D: Phaser.Input.Keyboard.KeyCodes.D
+            D: Phaser.Input.Keyboard.KeyCodes.D,
+            Q: Phaser.Input.Keyboard.KeyCodes.Q,
         });
 
+        GameManager.enemyManager = new enemyManager(this);
+
+        GameManager.LevelManager = new LevelManager(this, this.board);
+        GameManager.WaveManager = new WaveManager(this, this.board);
 
         GameManager.UIManager.UIAttackSelect = new UIAttackSelect(this, 0, 0)
         GameManager.UIManager.UIAttackBar = new UIAttackBar(this, [])
 
+
     }
 
     setupBoard() {
-        this.board = new Board(this, 5, 5);
-
+        this.board = new Board(this, 8, 4);
         GameManager.board = this.board;
     }
 
-
+    StartGame() {
+        GameManager.LevelManager.startLevel(level1)
+    }
 
     update() {
         if (this.cursor.up.isDown || this.cursor.W.isDown) {
@@ -143,9 +137,24 @@ export class Start extends Phaser.Scene {
         } else if (this.cursor.left.isDown || this.cursor.A.isDown) {
             this.player.TryMove('l');
         }
+
+        if (Phaser.Input.Keyboard.JustDown(this.cursor.Q)) {
+            GameManager.incrementMove()
+        }
         if (GameManager.UIManager.UIAttackSelect)
             GameManager.UIManager.UIAttackSelect.update()
+
+
+        // Game Loop
+        if (GameManager.LevelManager.checkLevelComplete()) {
+            console.log("level completed")
+        } else {
+            if (GameManager.WaveManager.isWaveDone()) {
+                console.log(`wave ${GameManager.LevelManager.currentWave} completed`)
+                GameManager.WaveManager.endWave()
+                GameManager.LevelManager.goToNextWave()
+            }
+        }
+
     }
 }
-
-// // Show icon

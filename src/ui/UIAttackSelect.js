@@ -65,23 +65,19 @@ export class UIAttackSelect extends Phaser.GameObjects.Container {
     }
 
     update() {
-        // if (GameManager.AttackMode) {
-        //     const playerPos = GameManager.player.getWorldPosition();
-        //     const pointer = this.scene.input.activePointer;
-        //     let dirX = pointer.x - playerPos.x;
-        //     let dirY = pointer.y - playerPos.y;
-        //     let angle = Phaser.Math.RadToDeg(Math.atan2(-dirY, dirX));
-        //     angle = (angle + 360) % 360;
+        if (GameManager.AttackMode) {
+            const playerPos = GameManager.player.getWorldPosition();
+            const pointer = this.scene.input.activePointer;
+            let dirX = pointer.x - playerPos.x;
+            let dirY = pointer.y - playerPos.y;
+            let angle = Phaser.Math.RadToDeg(Math.atan2(-dirY, dirX));
+            angle = (angle + 360) % 360;
 
-        //     if (angle >= 315 || angle < 45) { angle = 0 } else
-        //         if (angle >= 45 && angle < 135) { angle = 90 } else
-        //             if (angle >= 135 && angle < 225) { angle = 180 } else
-        //                 if (angle >= 225 && angle < 315) { angle = 270 }
 
-        //     // console.log(angle)
+            // console.log(angle)
 
-        //     this.WeaponIcon.setRotation(Phaser.Math.DegToRad(90 - angle));
-        // }
+            this.WeaponIcon.setFlipX(!(angle >= 270 || angle < 90));
+        }
     }
 
     show() {

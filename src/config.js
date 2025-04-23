@@ -2,7 +2,7 @@
 // config.js
 export const gameConfig = {
     // Board settings
-    baseURL: 'Rogue-Ramen',
+    baseURL: './',
     board: {
         cellSize: 100,
         gap: 5,
@@ -73,6 +73,39 @@ export const gameConfig = {
                 prefix: '11111111111111 #pistol ',
                 image: '/assets/spritesheets/pistol.png',
                 json: '/assets/jsons/pistol.json',
+                start: 0,
+                end: 5,
+                frameRate: 10,
+                loop: false
+            },
+            {
+                key: 'shotgun',
+                type: 'json',
+                prefix: '11111111111111 #shotgun ',
+                image: '/assets/spritesheets/shotgun.png',
+                json: '/assets/jsons/shotgun.json',
+                start: 0,
+                end: 5,
+                frameRate: 10,
+                loop: false
+            },
+            {
+                key: 'sniper',
+                type: 'json',
+                prefix: '11111111111111 #Sniper ',
+                image: '/assets/spritesheets/sniper.png',
+                json: '/assets/jsons/sniper.json',
+                start: 0,
+                end: 5,
+                frameRate: 10,
+                loop: false
+            },
+            {
+                key: 'grenade',
+                type: 'json',
+                prefix: '11111111111111 #grenade ',
+                image: '/assets/spritesheets/grenade.png',
+                json: '/assets/jsons/grenade.json',
                 start: 0,
                 end: 5,
                 frameRate: 10,
