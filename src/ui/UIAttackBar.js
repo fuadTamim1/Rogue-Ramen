@@ -2,21 +2,16 @@ import { GameManager } from "../GameManager.js";
 import { AttackManager } from "../managers/AttackManager.js";
 
 export class UIAttackBar extends Phaser.GameObjects.Container {
-    static BUTTON_SCALE = 2; // Your original scale constant
+    static BUTTON_SCALE = 2;
 
     static DEFAULT_STYLE = {
-        // Sizing (compatible with your BUTTON_SCALE)
-        buttonSize: 48,      // Base icon size (before scale)
-        buttonSpacing: 70 * UIAttackBar.BUTTON_SCALE,   // Scaled spacing
-
-        // Backgrounds
+        buttonSize: 48,
+        buttonSpacing: 70 * UIAttackBar.BUTTON_SCALE,
         barbtnColor: 0x222222,
         barbtnAlpha: 0.7,
         buttonbtnColor: 0x444444,
         buttonbtnAlpha: 0.8,
         buttonbtnRadius: 10,
-
-        // Positioning
         bottomOffset: 100,
         padding: 20
     };
@@ -30,7 +25,8 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
         this.attacks = attacks || [];
         this.buttons = [];
 
-        // Style configuration (preserving your scale approach)
+        this.ui = this.scene.ui;
+
         this.style = {
             ...UIAttackBar.DEFAULT_STYLE,
             hoverScale: UIAttackBar.BUTTON_SCALE * 1.1,
@@ -40,7 +36,11 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
 
         this.createBackground();
         this.createButtons();
-        scene.add.existing(this);
+        if (this.scene?.add) {
+            this.scene.add.existing(this);
+        } else {
+            console.warn('UIAttackBar: scene.add not available.');
+        }
     }
 
     createBackground() {
@@ -48,14 +48,27 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
         const btnWidth = totalWidth + this.style.padding * 10;
         const btnHeight = this.style.buttonSize * UIAttackBar.BUTTON_SCALE + this.style.padding * 2;
 
-        this.btn = this.scene.add.graphics()
-            .fillStyle(this.style.barbtnColor, this.style.barbtnAlpha)
-            .fillRoundedRect(
-                -btnWidth / 2, -btnHeight / 2,
-                btnWidth, btnHeight,
-                this.style.buttonbtnRadius
-            );
-        this.add(this.btn);
+        this.bg = this.ui.createNineSlice({
+            x: 0,
+            y: 0,
+            key: 'attack_bar_bg',
+            width: btnWidth,
+            height: btnHeight,
+            leftWidth: 8,
+            rightWidth: 8,
+            topHeight: 8,
+            bottomHeight: 8,
+            backgroundColor: this.style.barbtnColor,
+            backgroundAlpha: this.style.barbtnAlpha,
+            cornerRadius: this.style.buttonbtnRadius
+        });
+
+        if (!this.bg) {
+            console.error('UIAttackBar: Failed to create background.');
+            return;
+        }
+        this.bg.setOrigin(0.5);
+        this.add(this.bg);
     }
 
     createButtons() {
@@ -68,33 +81,28 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
             }
 
             const x = startX + index * this.style.buttonSpacing;
-            const container = this.scene.add.container(x, 0);
 
-            // Button background
-            const btn = this.scene.add.graphics()
-                .fillStyle(this.style.buttonbtnColor, this.style.buttonbtnAlpha)
-                .fillRoundedRect(
-                    -this.style.buttonSize / 2 * UIAttackBar.BUTTON_SCALE - 5,
-                    -this.style.buttonSize / 2 * UIAttackBar.BUTTON_SCALE - 5,
-                    this.style.buttonSize * UIAttackBar.BUTTON_SCALE + 10,
-                    this.style.buttonSize * UIAttackBar.BUTTON_SCALE + 10,
-                    this.style.buttonbtnRadius
-                ).setInteractive({
-                    useHandCursor: true,
-                    hitArea: new Phaser.Geom.Rectangle(
-                        -this.style.buttonSize / 2 * UIAttackBar.BUTTON_SCALE - 5,
-                        -this.style.buttonSize / 2 * UIAttackBar.BUTTON_SCALE - 5,
-                        this.style.buttonSize * UIAttackBar.BUTTON_SCALE + 10,
-                        this.style.buttonSize * UIAttackBar.BUTTON_SCALE + 10,
-                    ),
-                    hitAreaCallback: Phaser.Geom.Rectangle.Contains
-                });
+            // Create button container
+            const button = this.ui.createButton(x, 0, '', {
+                width: this.style.buttonSize * UIAttackBar.BUTTON_SCALE + 10,
+                height: this.style.buttonSize * UIAttackBar.BUTTON_SCALE + 10,
+                backgroundTexture: 'attack_icon_bg',
+                cornerRadius: this.style.buttonbtnRadius
+            });
 
-            // Attack icon (using your exact scaling)
+
+            if (!button) {
+                console.error(`UIAttackBar: Failed to create button for ${attack.name}`);
+                return;
+            }
+
+            // Add attack icon
             const icon = this.scene.add.image(0, 0, attack.icon)
-                .setScale(UIAttackBar.BUTTON_SCALE * 2)
-            // Label (position adjusted for scale)
-            const label = this.scene.add.text(
+                .setScale(UIAttackBar.BUTTON_SCALE * 2);
+            button.add(icon);
+
+            // Add label
+            const label = this.ui.createText(
                 0,
                 this.style.buttonSize / 2 * UIAttackBar.BUTTON_SCALE + 8,
                 attack.name,
@@ -103,19 +111,38 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
                     fontSize: '16px',
                     color: '#FFFFFF'
                 }
-            ).setOrigin(0.5);
+            );
+            if (!label) {
+                console.error(`UIAttackBar: Failed to create label for ${attack.name}`);
+                return;
+            }
+            label.setOrigin(0.5);
+            button.add(label);
 
-            container.add([btn, icon, label]);
-            this.setupButtonInteractions(btn, container, attack);
-            this.add(container);
-            this.buttons.push(container);
+            // Add tooltip
+            const tooltipText = attack.description || `${attack.name}: Click to use`;
+            const tooltip = this.ui.createTooltip(button, tooltipText, {
+                backgroundTexture: 'tooltip_bg',
+                backgroundWidth: 200,
+                backgroundHeight: 60,
+                fontSize: '14px'
+            });
+            if (!tooltip) {
+                console.error(`UIAttackBar: Failed to create tooltip for ${attack.name}`);
+            } else {
+                this.add(tooltip);
+            }
+
+            this.setupButtonInteractions(button, attack);
+            this.add(button);
+            this.buttons.push({ container: button, tooltip });
         });
     }
 
-    setupButtonInteractions(button, container, attack) {
+    setupButtonInteractions(button, attack) {
         button.on('pointerover', () => {
             this.scene.tweens.add({
-                targets: container,
+                targets: button,
                 scale: this.style.hoverScale / UIAttackBar.BUTTON_SCALE,
                 duration: this.style.tweenDuration
             });
@@ -123,7 +150,7 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
 
         button.on('pointerout', () => {
             this.scene.tweens.add({
-                targets: container,
+                targets: button,
                 scale: 1,
                 duration: this.style.tweenDuration
             });
@@ -131,15 +158,14 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
 
         button.on('pointerdown', () => {
             this.scene.tweens.add({
-                targets: container,
+                targets: button,
                 scale: this.style.pressedScale / UIAttackBar.BUTTON_SCALE,
                 duration: this.style.tweenDuration,
                 yoyo: true
             });
 
             try {
-                AttackManager.enableAttackMode(attack)
-                // console.log(attack)
+                AttackManager.enableAttackMode(attack);
             } catch (error) {
                 console.error(`Attack error: ${error}`);
             }
@@ -148,17 +174,13 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
 
     show() {
         this.active = true;
-        this.setVisible(true)
+        this.setVisible(true);
         this.scene.tweens.add({
             targets: this,
             y: this.scene.cameras.main.height - UIAttackBar.DEFAULT_STYLE.bottomOffset,
-            duration: 400,
-            onComplete: () => {
-
-            }
+            duration: 400
         });
     }
-
 
     hide() {
         this.active = false;
@@ -167,7 +189,7 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
             y: 1000,
             duration: 400,
             onComplete: () => {
-                this.setVisible(false)
+                this.setVisible(false);
             }
         });
     }
@@ -182,20 +204,16 @@ export class UIAttackBar extends Phaser.GameObjects.Container {
     handleResize() {
         this.updatePosition();
         this.removeAll(true);
+        this.buttons = [];
         this.createBackground();
         this.createButtons();
     }
 
     refresh() {
         this.attacks = GameManager.player.attacks;
-
-        // Remove previous buttons and background
-        this.removeAll(true);  // Destroys all children (buttons + btn)
+        this.removeAll(true);
         this.buttons = [];
-
-        // Recreate UI
         this.createBackground();
         this.createButtons();
     }
-
 }

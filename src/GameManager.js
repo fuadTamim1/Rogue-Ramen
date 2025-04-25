@@ -1,4 +1,3 @@
-
 export const GameManager = {
     player: null,
     board: null,
@@ -17,6 +16,8 @@ export const GameManager = {
     DialogSystem: null,
     LevelManager: null,
     WaveManager: null,
+    shopManager: null,
+
     CurrentLevel: 0,
 
     incrementMove() {

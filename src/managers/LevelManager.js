@@ -5,6 +5,7 @@ export class LevelManager {
         this.scene = scene;
         this.board = board;
         this.currentWave = 0;
+        this.currentLevel = null;
     }
 
     startLevel(levelData) {
@@ -20,6 +21,24 @@ export class LevelManager {
         if (this.currentLevel.waves[++this.currentWave])
             GameManager.WaveManager.startWave(this.currentLevel.waves[this.currentWave])
     }
-    checkLevelComplete() { return false }
+    checkLevelComplete() {
+        if (this.currentLevel && this.currentLevel.waves && this.currentWave >= this.currentLevel.waves.length - 1) {
+            if (GameManager.WaveManager.isWaveDone()) {
+                this.goToShop();
+            }
+        }
+    }
+
+    goToShop() { 
+        this.scene.add.tween({
+            targets: this.scene.shopManager.ui,
+            x: 1480 / 2,
+            duration: 1000,
+            ease: 'power2',
+            onComplete() {
+
+            }
+        })
+    }
     restartLevel() { }
 }

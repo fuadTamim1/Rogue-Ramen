@@ -2,46 +2,71 @@ import { gameConfig } from './config.js';
 import { Cell } from './Cell.js';
 import { GameManager } from './GameManager.js';
 
-export class Board {
+export class Board extends Phaser.GameObjects.Container {
     static preloadAssets(scene) {
-        const assets = gameConfig.board.assets;
-        scene.load.spritesheet('cell', assets.cell, { frameWidth: 32, frameHeight: 32 });
     }
 
     constructor(scene, w, h) {
+        super(scene)
         this.scene = scene;
         this.screenWidth = scene.cameras.main.width;
         this.screenHeight = scene.cameras.main.height;
-        this.cells = this.generate(w, h);
+        this.cells = []
+        this.scene.add.existing(this)
+        this.setDepth(1)
     }
 
     generate(w, h) {
         const cells = [];
+        const yOffset = (this.screenHeight / 2) + gameConfig.board.hight;
         const startX = (this.screenWidth / 2) - ((w * gameConfig.board.cellSize + gameConfig.board.gap * (w - 1)) / 2);
-        const startY = (this.screenHeight / 2) - ((h * gameConfig.board.cellSize + gameConfig.board.gap * (h - 1)) / 2);
+        const startY = yOffset - ((h * gameConfig.board.cellSize + gameConfig.board.gap * (h - 1)) / 2);
+        const outer_boarder = 8;
+
+        const boardWidth = w * gameConfig.board.cellSize + gameConfig.board.gap * (w - 1);
+        const boardHeight = h * gameConfig.board.cellSize + gameConfig.board.gap * (h - 1);
+
+        const panelWidth = boardWidth + outer_boarder * 2;
+        const panelHeight = boardHeight + outer_boarder * 2;
+
 
         for (let i = 0; i < w; i++) {
             for (let j = 0; j < h; j++) {
                 const x = startX + (gameConfig.board.cellSize + gameConfig.board.gap) * i;
                 const y = startY + (gameConfig.board.cellSize + gameConfig.board.gap) * j;
 
-                const cell = new Cell(this.scene, x, y, i, j);
+                const cell = new Cell(this.scene, x, y, i, j, (i + j) % 2 == 0 ? 'cell_1' : 'cell_0');
+                // cell.setTint(cell.color)
                 cells.push(cell);
             }
         }
 
+        this.panel = this.scene.ui.createNineSlice({
+            x: ((this.screenWidth / 2) - (gameConfig.board.cellSize + gameConfig.board.gap) / 2) + 2,
+            y: (yOffset - (gameConfig.board.cellSize + gameConfig.board.gap) / 2),
+            key: 'board_bg',
+            width: panelWidth,
+            height: panelHeight + 2,
+            leftWidth: 8,
+            rightWidth: 8,
+            topHeight: 8,
+            bottomHeight: 8,
+        })
 
+        this.panel.setOrigin(0.5, 0.5)
+        this.panel.setDepth(0)
         return cells;
     }
 
     setConfig(width, height) {
         this.removeBoard();
         this.cells = this.generate(width, height);
+        this.add(this.cells);
         console.log(this.cells)
     }
 
     getCells(withoutPlayerCell = false) {
-        let cells = this.board.cells; // Flattens 2D array to 1D
+        let cells = this.cells; // Flattens 2D array to 1D
 
         if (withoutPlayerCell) {
             const playerPos = GameManager.player.getPosition();
@@ -76,16 +101,22 @@ export class Board {
         return MaxY + 1
     }
 
-    HighlightCell(x, y, color) {
-        return this.getCell(x, y).setTint(color);
+    HighlightCell(x, y, color, texture = null) {
+        const cell = this.getCell(x, y);
+        cell.setTint(color);
+        cell.setTexture(texture);
+        return cell;
     }
 
-    HighlightCells(cells, color) {
-        return cells.forEach((c) => c.setTint(color));
+    HighlightCells(cells, color, texture = null) {
+        return cells.forEach((c) => { c.setTint(color); c.setTexture(texture || c.orginaltexture) });
     }
 
     clearHighlight() {
-        return this.cells.forEach(cell => { cell.clearTint() });
+        return this.cells.forEach(cell => {
+            cell.setTexture(cell.orginaltexture)
+            cell.clearTint()
+        });
     }
 
     resetBoard() {
@@ -97,11 +128,15 @@ export class Board {
         }
     }
 
-    removeBoard() {
+    removeBoard() { 
         for (let cell of this.cells) {
             if (cell && cell.active) {
                 cell.destroy();
             }
+        }
+        this.remove(this.cells);
+        if (this.panel) {
+            this.panel.destroy()
         }
         this.cells = []
     }

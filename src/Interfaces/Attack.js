@@ -5,7 +5,7 @@ import { helper } from "../helpers/helper.js";
 export class Attack {
     static groupedAnimations = null;  // Will store animation frame data
 
-    constructor(data, scene, board) {
+    constructor(data, scene, board, parent) {
         this.name = data.name;
         this.description = data.description;
         this.lvl = data.lvl;
@@ -15,20 +15,23 @@ export class Attack {
         this.board = board;
         this.damage = data.damage;
 
-        this.iconkey = data.key;
-        this.icon = this.resolveIcon(data.key);
+        this.parent = parent;
+        this.delay = data.delay ?? 300;
+
+        this.key = data.key;
+        this.icon = data.icon
     }
 
-    resolveIcon(animationName) {
-        const frame = GameManager.spriteManager.getFrameTexture(animationName);
+    // resolveIcon(animationName) {
+    //     const frame = GameManager.spriteManager.getFrameTexture(animationName);
 
-        if (!frame) {
-            console.warn(`Icon for animation "${animationName}" not found`);
-            return 'missing-icon';
-        }
+    //     if (!frame) {
+    //         console.warn(`Icon for animation "${animationName}" not found`);
+    //         return 'missing-icon';
+    //     }
 
-        return frame;
-    }
+    //     return frame;
+    // }
 
     increaseCoolDown() {
         this.cooldown++;
@@ -48,25 +51,22 @@ export class Attack {
         return targetable_cells;
     }
 
+    getHitByCells(target){
+        return [target];
+    }
+
     Execute(current, target) {
         // Phaser
         if (!helper.CellsInclude(this.getTargetableCells(current), target)) {
             return;
         }
-        GameManager.UIManager.UIAttackSelect.WeaponIcon.play(this.iconkey)
         this.cooldown = 0;
         // console.log(target);
 
-        if (target.hasChild) {
-            // console.log(`${target.child?.constructor?.name}`);
-            this.scene.time.delayedCall(200, () => {
-                // Code to run after 1 second (1000 ms)
-                this.scene.cameras.main.shake(200, 0.002); // subtle shake on enter
+        const hitByCells = this.getHitByCells(target);
+        GameManager.board.clearHighlight()
+        GameManager.board.HighlightCells(hitByCells, 0xFFFFFF, 'cell_target')
 
-                target.child.takeDamage(this.damage * this.lvl)
-                // console.log(`${target.child?.constructor?.name || "Unknown"}: ${target.child?.hp ?? 0}`);
-
-            }, [], this.scene);
-        }
+       
     }
 }

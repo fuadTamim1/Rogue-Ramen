@@ -14,10 +14,14 @@ export class SpriteLoader {
                 }
             } else {
                 // PNG or regular spritesheet
-                this.scene.load.spritesheet(asset.key, asset.path, {
-                    frameWidth: asset.frameWidth || config.frameWidth,
-                    frameHeight: asset.frameHeight || config.frameHeight
-                });
+                if (asset.single) {
+                    this.scene.load.image(asset.key, asset.path);
+                } else {
+                    this.scene.load.spritesheet(asset.key, asset.path, {
+                        frameWidth: asset.frameWidth || config.frameWidth,
+                        frameHeight: asset.frameHeight || config.frameHeight
+                    });
+                }
             }
         });
     }
@@ -25,7 +29,7 @@ export class SpriteLoader {
     createAnimations(config) {
         config.assets.forEach((asset) => {
             // Skip if animations already created
-            if (this.scene.anims.exists(asset.key)) return;
+            if (asset.single || this.scene.anims.exists(asset.key)) return;
 
             // ✅ Aseprite: Let Phaser auto-create animations from tags
             if (asset.type === 'json' && asset.aseprite) {

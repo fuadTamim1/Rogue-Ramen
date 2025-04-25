@@ -3,18 +3,21 @@ import { GameManager } from '../GameManager.js';
 import { helper } from "../helpers/helper.js";
 
 export class ShotgunAttack extends Attack {
-    constructor(scene, board) {
+    constructor(scene, board, parent) {
         super(
             {
                 name: "Shotgun Attack",
                 description: "A spread and deadly attack using Shotgun.",
                 key: "shotgun",
+                icon: "shotgun_icon",
                 lvl: 1,
                 cooldown: 3,
-                damage: 100
+                damage: 3
             },
             scene,
-            board
+            board,
+            parent,
+
         );
     }
 
@@ -25,29 +28,22 @@ export class ShotgunAttack extends Attack {
         return targetable_cells;
     }
 
+    getHitByCells(target) {
+        return target.getNeighbors(1, ']');
+    }
+
     Execute(current, target) {
-        // Phaser
-        if (!helper.CellsInclude(this.getTargetableCells(current), target)) {
-            return;
-        }
-        GameManager.UIManager.UIAttackSelect.WeaponIcon.play(this.iconkey)
-        this.cooldown = 0;
-        // console.log(target);
+        super.Execute(current, target);
 
-        if (target.hasChild) {
-            // console.log(`${target.child?.constructor?.name}`);
-            this.scene.time.delayedCall(200, () => {
-                // Code to run after 1 second (1000 ms)
-                this.scene.cameras.main.shake(200, 0.002); // subtle shake on enter
-                
-                target.child.takeDamage(this.damage * this.lvl)
-                var targets = target.getNeighbors(1,']')
-                targets.forEach(t => {
-                    t.child?.takeDamage(this.damage * this.lvl)
-                });
-                // console.log(`${target.child?.constructor?.name || "Unknown"}: ${target.child?.hp ?? 0}`);
+        this.scene.time.delayedCall(200, () => {
+            this.scene.cameras.main.shake(200, 0.002);
 
-            }, [], this.scene);
-        }
+            var targets = this.getHitByCells(target);
+            console.log(targets);
+            target.child?.takeDamage(this.damage * this.lvl)
+            targets.forEach(t => {
+                t.child?.takeDamage(this.damage * this.lvl)
+            });
+        }, [], this.scene);
     }
 }

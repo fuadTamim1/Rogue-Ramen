@@ -4,15 +4,16 @@ export const gameConfig = {
     // Board settings
     baseURL: './',
     board: {
-        cellSize: 100,
-        gap: 5,
+        cellSize: 75,
+        gap: 4,
+        hight: 100,
         colors: {
             default: 0xffffff,
             hover: 0xaaaaaa,
             active: 0x00ff00
         },
         assets: {
-            cell: '/assets/cell2.png',
+            cell: '/assets/cell.png',
         }
     },
     // Player settings
@@ -30,10 +31,72 @@ export const gameConfig = {
         frameWidth: 53,
         frameHeight: 43,
         assets: [
-            // {
-            //     key: 'idle', path: '/assets/spritesheets/idle.png', frameWidth: 48, 
-            //     frameHeight: 43, frameRate: 9, loop: 1
-            // },
+            {
+                key: 'game_bg', path: '/assets/scene/bg.png', single: true
+            },
+            {
+                key: 'cell_0', path: '/assets/cell_black.png', single: true
+            },
+            {
+                key: 'cell_1', path: '/assets/cell_white.png', single: true
+            },
+            {
+                key: 'cell_hover', path: '/assets/cell_hover.png', single: true
+            },
+            {
+                key: 'cell_target', path: '/assets/cell_target.png', single: true
+            },
+            {
+                key: 'board_bg', path: '/assets/scene/board.png', single: true
+            },
+            {
+                key: 'worktop', path: '/assets/scene/worktop.png', single: true
+            },
+            {
+                key: 'chairs', path: '/assets/scene/chears.png', single: true
+            },
+            {
+                key: 'cola', path: '/assets/scene/cola.png', single: true
+            },
+            {
+                key: 'shadow', path: '/assets/scene/shadow.png', single: true
+            },
+            {
+                key: 'teleport', path: '/assets/teleport_icon.png', single: true
+            },
+            {
+                key: 'transition', path: '/assets/transition.png', single: true
+            },
+            {
+                key: 'knife_icon', path: '/assets/UI/icons/knife.png', single: true
+            },
+            {
+                key: 'pistol_icon', path: '/assets/UI/icons/pistol.png', single: true
+            },
+            {
+                key: 'shotgun_icon', path: '/assets/UI/icons/shotgun.png', single: true
+            },
+            {
+                key: 'sniper_icon', path: '/assets/UI/icons/sniper.png', single: true
+            },
+            {
+                key: 'stick_icon', path: '/assets/UI/icons/stick.png', single: true
+            },
+            {
+                key: 'katana_icon', path: '/assets/UI/icons/katana.png', single: true
+            },
+            {
+                key: 'grenade_icon', path: '/assets/UI/icons/grenade.png', single: true
+            },
+            {
+                key: 'tooltip_bg', path: '/assets/UI/ItemBox.png', single: true
+            },
+            {
+                key: 'attack_bar_bg', path: '/assets/UI/cards/card_background.png', single: true
+            },
+            {
+                key: 'attack_icon_bg', path: '/assets/UI/cards/card.png', single: true
+            },
             {
                 key: 'idle',
                 type: 'json',
@@ -111,19 +174,75 @@ export const gameConfig = {
                 frameRate: 10,
                 loop: false
             },
-            // {
-            //     key: 'move', path: '/assets/spritesheets/move.png', frameWidth: 52.7, // 👈 Correct per-sheet value
-            //     frameHeight: 46,
-            //     frameRate: 6
-            // },
-            // { key: 'knife', path: '/assets/spritesheets/knife.png', frameRate: 6 },
-            // { key: 'pistol', path: '/assets/spritesheets/pistol.png' },
-            // { key: 'shotgun', path: '/assets/sprites/shotgun.png' },
-            // { key: 'sniper', path: '/assets/sprites/sniper.png' },
-            // { key: 'teleporte in', path: '/assets/sprites/teleporte_in.png' },
-            // { key: 'teleporte_out', path: '/assets/sprites/teleporte_out.png' },
-            // { key: 'healing', path: '/assets/sprites/healing.png' },
-            // { key: 'grenade', path: '/assets/sprites/grenade.png' },
+            {
+                key: 'teleport_out',
+                type: 'json',
+                prefix: '11111111111111 #teleport_out ',
+                image: '/assets/spritesheets/teleport_out.png',
+                json: '/assets/jsons/teleport_out.json',
+                start: 0,
+                end: 5,
+                frameRate: 10,
+                loop: false
+            },
+            {
+                key: 'teleport_in',
+                type: 'json',
+                prefix: '11111111111111 #teleport_in ',
+                image: '/assets/spritesheets/teleport_in.png',
+                json: '/assets/jsons/teleport_in.json',
+                start: 0,
+                end: 10,
+                frameRate: 10,
+                loop: false
+            },
+            // Enemies
+            // Character 1
+            {
+                key: 'stick_guy_idle',
+                type: 'json',
+                prefix: '#idle ',
+                image: '/assets/spritesheets/enemies/character_1/idle.png',
+                json: '/assets/spritesheets/enemies/character_1/idle.json',
+                start: 0,
+                end: 5,
+                frameRate: 10,
+                loop: false
+            },
+            {
+                key: 'stick_guy_move',
+                type: 'json',
+                prefix: '#move ',
+                image: '/assets/spritesheets/enemies/character_1/move.png',
+                json: '/assets/spritesheets/enemies/character_1/move.json',
+                start: 0,
+                end: 5,
+                frameRate: 10,
+                loop: false
+            },
+            {
+                key: 'stick_guy_death',
+                type: 'json',
+                prefix: '#death ',
+                image: '/assets/spritesheets/enemies/character_1/death.png',
+                json: '/assets/spritesheets/enemies/character_1/death.json',
+                start: 0,
+                end: 5,
+                frameRate: 10,
+                loop: false
+            },
+            {
+                key: 'stick',
+                type: 'json',
+                prefix: '#stick ',
+                image: '/assets/spritesheets/enemies/character_1/stick.png',
+                json: '/assets/spritesheets/enemies/character_1/stick.json',
+                start: 0,
+                end: 6,
+                frameRate: 10,
+                loop: false
+            },
+            // the assets is so messy but here where Im put  all animations and sprites and it loaded using custom script 
         ]
     },
     // Game settings

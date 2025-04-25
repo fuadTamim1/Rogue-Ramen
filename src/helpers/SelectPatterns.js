@@ -109,6 +109,23 @@ export const SelectPaterns = {
         }
 
         return neighbors;
+    },
+    topHarm(cell, length = 3) {
+        const board = GameManager.board;
+        const neighbors = [];
+        const { x, y } = cell.position;
+
+        for (let i = -length; i <= length; i++) {
+            for (let j = -length; j <= length; j++) {
+                if (Math.abs(i) + Math.abs(j) <= length) {
+                    if (board.getCell(x + i, y + j)) {
+                        const neighbor = board.getCell(x + i, y + j);
+                        neighbors.push(neighbor);
+                    }
+                }
+            }
+        }
+        return neighbors;
     }
 
 

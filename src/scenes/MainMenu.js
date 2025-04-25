@@ -7,7 +7,7 @@ export class MainMenu extends Phaser.Scene {
 
     preload() {
         // Load your background and any other assets here
-        this.load.image('menuBg', '/assets/sprites/bg.png'); // replace with your image
+        this.load.image('menuBg', '/assets/bg.png'); // replace with your image
         this.load.image('button', '/assets/UI/Button_52x14.png'); // basic button image
     }
 
@@ -40,9 +40,6 @@ export class MainMenu extends Phaser.Scene {
             backgroundColorDisabled: 0x9ea8c7,//
         });
 
-        startBtn.on('pointerdown', () => {
-            this.scene.start('Game');
-        });
 
         // How To Play Button
         const howToPlayBtn = this.ui.createButton(width / 2, height / 2 + 100, "How To Play", {
@@ -127,35 +124,46 @@ export class MainMenu extends Phaser.Scene {
         this.worldCenterY = this.cameras.main.worldView.centerY;
         this.cameras.main.shake(11200, 0.0012); // subtle shake on enter
 
+        startBtn.on('pointerdown', () => {
+            this.tweens.add({
+                targets: this.cameras.main,
+                y: 1000,
+                duration: 180,
+                ease: "power2"
+            })
+            this.time.delayedCall(200, () => {
+                this.scene.start('Game');
+            })
+        });
     }
 
     update() {
         // const pointer = this.input.activePointer;
         // pointer.positionToCamera(this.camera);
-    
+
         // const { width, height } = this.scale;
         // const centerX = this.camera.scrollX + width / 2;
         // const centerY = this.camera.scrollY + height / 2;
-    
+
         // const dx = pointer.x - centerX;
         // const dy = pointer.y - centerY;
-    
+
         // const deadzone = 200;
 
         // const lerpSpeed = 0.02;
-    
+
         // const maxSpeed = 10;
 
         // if (Math.abs(dx) > deadzone) {
         //     const moveX = Phaser.Math.Clamp(dx * lerpSpeed, -maxSpeed, maxSpeed);
         //     this.camera.scrollX += moveX;
         // }
-        
+
         // if (Math.abs(dy) > deadzone) {
         //     const moveY = Phaser.Math.Clamp(dy * lerpSpeed, -maxSpeed, maxSpeed);
         //     this.camera.scrollY += moveY;
         // }
-        
+
     }
-    
+
 }

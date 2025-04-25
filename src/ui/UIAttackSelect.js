@@ -1,6 +1,5 @@
 import { GameManager } from "../GameManager.js";
 import { AttackManager } from "../managers/AttackManager.js";
-import { gameConfig } from "../config.js";
 export class UIAttackSelect extends Phaser.GameObjects.Container {
     constructor(scene, x, y) {
         super(scene);
@@ -11,13 +10,14 @@ export class UIAttackSelect extends Phaser.GameObjects.Container {
         this.setVisible(this.active)
         this.createUI();
         this.setPosition(0, 0);
+        this.setDepth(0)
 
 
         scene.add.existing(this);
     }
 
     createUI() {
-        this.label = this.scene.add.text(
+        this.label = this.scene.ui.createText(
             this.scene.cameras.main.width / 2,
             this.scene.cameras.main.height - 200,
             "Select Where To Hit",
@@ -26,7 +26,7 @@ export class UIAttackSelect extends Phaser.GameObjects.Container {
                 fontSize: '16px',
                 color: '#FFFFFF'
             }
-        ).setOrigin(0.5);
+        ).setOrigin(0.5).setDepth(100);
         this.exitButton = this.createButton(this.scene.cameras.main.width - 200, 80, 'Cancle', () => {
             // scene.events.emit('cancle-attack');
             AttackManager.exitAttackMode()
@@ -34,19 +34,18 @@ export class UIAttackSelect extends Phaser.GameObjects.Container {
         });
 
         const WeaponIconFrame = GameManager.spriteManager.getFrameTexture('knife', 0);
-        this.WeaponIcon = this.scene.add.sprite(GameManager.player.getWorldPosition().x, GameManager.player.getWorldPosition().y - 100, 'atlas', WeaponIconFrame);
-        this.WeaponIcon.setDisplaySize(
-            gameConfig.board.cellSize * 2,
-            gameConfig.board.cellSize * 2
-        );
+
+        // this.WeaponIcon.setDepth(200)
+
+       
 
         // Pathfinding usage example
         GameManager.events.on('new_move_completed', () => {
-            this.WeaponIcon.x = GameManager.player.getWorldPosition().x;
-            this.WeaponIcon.y = GameManager.player.getWorldPosition().y - 100;
+            // this.WeaponIcon.x = GameManager.player.getWorldPosition().x;
+            // this.WeaponIcon.y = GameManager.player.getWorldPosition().y - 100;
         });
 
-        this.add([this.label, this.exitButton, this.WeaponIcon])
+        this.add([this.label, this.exitButton])
     }
 
     createButton(x, y, text, callback) {
@@ -76,17 +75,14 @@ export class UIAttackSelect extends Phaser.GameObjects.Container {
 
             // console.log(angle)
 
-            this.WeaponIcon.setFlipX(!(angle >= 270 || angle < 90));
+            GameManager.player.ui.WeaponIcon.setFlipX(!(angle >= 270 || angle < 90));
         }
     }
 
     show() {
         this.active = true;
         this.setVisible(true)
-        if (GameManager.currentAttack)
-            this.WeaponIcon.setTexture(GameManager.currentAttack.key, 0)
-
-        this.WeaponIcon.setDepth(10000)
+        
 
         this.scene.tweens.add({
             targets: this.label,
@@ -100,10 +96,8 @@ export class UIAttackSelect extends Phaser.GameObjects.Container {
             duration: 400,
             ease: 'Back.Out',
         });
-
-        if (GameManager.currentAttack) {
-            this.WeaponIcon.setTexture(GameManager.currentAttack.icon, 0);
-        }
+  
+    
         this.scene.tweens.add({
             targets: this,
             y: 0,

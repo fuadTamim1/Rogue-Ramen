@@ -1,5 +1,8 @@
+import { PhaserUI } from "../libs/PhaserUI.js";
 import { gameConfig } from "./config.js";
 import { GameManager } from "./GameManager.js";
+import { AttackManager } from "./managers/AttackManager.js";
+import { UIPlayer } from "./ui/UIPlayer.js";
 
 export class Player extends Phaser.GameObjects.Sprite {
 
@@ -11,13 +14,25 @@ export class Player extends Phaser.GameObjects.Sprite {
         // Calculate initial position
         let initialX = x, initialY = y;
         // In Player constructor
-      
+
 
         super(scene, initialX, initialY, 'atlas');
-        
+
         // Set origin to bottom center (0.5, 1)
         this.setOrigin(0.5, .75);
         this.setDepth(10)
+
+        // this.PlayerUI = ;
+        // const txt = this.ui.createText(1000 / 2, 100, 'Hello', {
+        //     fontSize: '2rem',
+        //     fontFamily: 'Pixelify Sans',
+        //     color: '#ffffff',
+        // }).setOrigin(0.5);
+
+        // this.PlayerUI.add(txt)
+
+        this.ui = new UIPlayer(scene);
+
         // Add this sprite to the scene
         scene.add.existing(this);
 
@@ -26,7 +41,7 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.screenWidth = scene.cameras.main.width;
         this.screenHeight = scene.cameras.main.height;
         this.board = board; // Reference to the board
-   
+
         this.facingRight = true;
         this.facingLeft = false;
         this.attacks = [];
@@ -34,16 +49,15 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.boardX = x;
         this.boardY = y;
         const scale = 4; // Must be integer (1, 2, 3, etc.)
-        this.setDisplaySize(
-            gameConfig.board.cellSize * scale,
-            gameConfig.board.cellSize * scale
-        );
-
+      
         this.setScale(scale); // Alternative to setDisplaySize
         // Set up animation completion listener once
         this.on('animationcomplete', this.handleAnimationComplete, this);
 
-        this.hp = 1000;
+        this.maxhp = 8;
+        this.hp = this.maxhp;
+
+        this.ui.createHealthBarUI(this.hp, this.maxhp)
 
         this.SetupEvents()
 
@@ -64,7 +78,7 @@ export class Player extends Phaser.GameObjects.Sprite {
 
     handleAnimationComplete(animation) {
         // When movement or attack animations complete, go back to idle
-        if (animation.key === 'move' || animation.key === 'Knife attack') {
+        if (animation.key === 'move' || animation.key === 'Knife attack' || animation.key === "teleport_out") {
             this.playIdle();
         }
     }
@@ -86,12 +100,13 @@ export class Player extends Phaser.GameObjects.Sprite {
                 console.warn(`can't place player at cell: (${cell.x},${cell.y}) it's taken by another object.`)
                 return;
             }
+            this.getCurrentCell().child = null;
             initialX = cell.x;
             initialY = cell.y;
 
             cell.child = this;
-      
-            console.log(cell.boardX,cell.boardY)
+
+            console.log(cell.boardX, cell.boardY)
         } else {
             // Fallback if no board is provided
             const cellSize = gameConfig.board.cellSize;
@@ -100,11 +115,11 @@ export class Player extends Phaser.GameObjects.Sprite {
         }
         this.x = initialX;
         this.y = initialY;
-       
+
     }
 
     TryMove(dir = 'r') {
-        console.log(this.boardX,this.boardY)
+        console.log(this.boardX, this.boardY)
         if (this.isMoving) return;
         dir = dir.toLowerCase();
 
@@ -165,12 +180,17 @@ export class Player extends Phaser.GameObjects.Sprite {
     }
     takeDamage(amount) {
         this.hp -= amount;
+        this.ui.createHealthBarUI(this.hp, this.maxhp)
+
         this.scene.tweens.add({
             targets: this,
-            alpha: 0.3,
+            alpha: 0.5,
             yoyo: true,
             repeat: 3,
-            duration: 100
+            duration: 100,
+            onComplete: () => {
+                this.setAlpha(1); // Ensure it's fully opaque again
+            }
         });
         if (this.hp <= 0) {
             this.die();
@@ -204,7 +224,9 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.__UpdateSpritePosition();
         return;
     }
-
+    update() {
+        this.ui.setPosition(this.x, this.y);
+    }
     __UpdateSpritePosition() {
         this.isMoving = true;
         // If we have a board reference, use the cell's position
@@ -278,10 +300,16 @@ export class Player extends Phaser.GameObjects.Sprite {
         if (this.attacks.includes(Attack)) {
             Attack.Execute(this.getCurrentCell(), target);
             GameManager.AttackMode = false;
-            this.scene.time.delayedCall(300, () => {
+            this.scene.time.delayedCall(Attack.delay ?? 300, () => {
                 GameManager.incrementMove();
             })
         }
+        if (Attack.key !== 'teleport')
+            GameManager.player.ui?.WeaponIcon.play(Attack.key)
+
+        this.scene.time.delayedCall(700, () => {
+            AttackManager.exitAttackMode()
+        })
     }
 
     TryUsePower() {

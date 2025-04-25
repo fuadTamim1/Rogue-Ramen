@@ -16,11 +16,13 @@ import { enemyManager } from '../managers/EnemyManager.js';
 import { SpriteLoader } from '../addons/sprite/SpriteLoader.js';
 import { ShotgunAttack } from '../attacks/ShotgunAttack.js';
 import { SniperAttack } from '../attacks/SniperAttack.js';
-import { GrendaeAttack } from '../attacks/GrenadeAttack.js';
+import { GrendadeAttack } from '../attacks/GrenadeAttack.js';
 import { PhaserUI } from '../../libs/PhaserUI.js';
 import { LevelManager } from '../managers/LevelManager.js';
 import { WaveManager } from '../managers/WaveManager.js';
 import { level1 } from '../data/levels.js';
+import { UIShop } from '../ui/UIShop.js';
+import { Item, ShopManager } from '../managers/ShopManager.js';
 
 /**
  * 
@@ -29,7 +31,7 @@ import { level1 } from '../data/levels.js';
             new PistolAttack(this, this.board),
             new ShotgunAttack(this, this.board),
             new SniperAttack(this, this.board),
-            new GrendaeAttack(this, this.board)
+            new GrendadeAttack(this, this.board)
         ];
 
         GameManager.UIManager.UIAttackBar.refresh()
@@ -61,6 +63,42 @@ export class Game extends Phaser.Scene {
 
         this.ui = new PhaserUI(this);
 
+
+
+        this.shopManager = new ShopManager(this);
+
+        // Add items to shop
+        const healthPotion = new Item(
+            "Health Potion",
+            "knife_icon",
+            50,
+            () => { /* Add health logic */ }
+        );
+
+        const reloadPotion = new Item(
+            "Reload Potion",
+            "sniper_icon",
+            25,
+            () => { /* Add health logic */ }
+        );
+
+        this.shopManager.addItem(healthPotion)
+        this.shopManager.addItem(reloadPotion)
+
+        const { width, height } = this.scale;
+
+        // Background
+        this.add.image(width / 2 - 1, height / 2 + 1, 'game_bg').setDisplaySize(width, height);
+
+        // Worktop
+        const worktopScale = 3.00;
+        const worktop = this.add.image(0, 30, 'worktop').setDisplaySize(494 * worktopScale, 112 * worktopScale).setOrigin(0, 0);
+
+        const chairs = this.add.image(0, 200, 'chairs').setDisplaySize(83 * worktopScale, 53 * worktopScale).setOrigin(0, 0);
+
+        const cola = this.add.image(860, 80, 'cola').setDisplaySize(53 * worktopScale, 22 * worktopScale).setOrigin(0, 0);
+
+
         this.spriteManager.createAnimations(gameConfig.sheets);
         GameManager.spriteManager = this.spriteManager;
 
@@ -91,7 +129,7 @@ export class Game extends Phaser.Scene {
         });
 
         GameManager.dialog.createStyle('sci-fi', SciFiTheme);
-        this.player = new Player(this, 4, 4, this.board);
+        this.player = new Player(this, 0, 0, this.board);
 
         GameManager.player = this.player;
 
@@ -115,15 +153,24 @@ export class Game extends Phaser.Scene {
         GameManager.UIManager.UIAttackSelect = new UIAttackSelect(this, 0, 0)
         GameManager.UIManager.UIAttackBar = new UIAttackBar(this, [])
 
-
     }
 
     setupBoard() {
-        this.board = new Board(this, 8, 4);
+        this.board = new Board(this, 8, 3);
         GameManager.board = this.board;
     }
 
     StartGame() {
+        // In your game scene:
+
+        this.cameras.main.y = 1000
+
+        this.tweens.add({
+            targets: this.cameras.main,
+            y: 0,
+            duration: 180,
+            ease: "power2"
+        })
         GameManager.LevelManager.startLevel(level1)
     }
 
@@ -145,6 +192,8 @@ export class Game extends Phaser.Scene {
             GameManager.UIManager.UIAttackSelect.update()
 
 
+        if (GameManager.player)
+            GameManager.player.update()
         // Game Loop
         if (GameManager.LevelManager.checkLevelComplete()) {
             console.log("level completed")

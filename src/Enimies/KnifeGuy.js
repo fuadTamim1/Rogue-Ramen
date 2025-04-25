@@ -5,9 +5,9 @@ export class KnifeGuy extends Entity {
     constructor(scene, x, y, board) {
         super(scene, x, y, board,'knifeGuy'); // Use appropriate texture key
 
-        this.hp = 150;
+        this.hp = 2;
         this.name = "enemy A";
-        this.loadAttack(new KnifeAttack(scene, board))
+        this.loadAttack(new KnifeAttack(scene, board, this))
     }
 
     takeDamage(amount) {

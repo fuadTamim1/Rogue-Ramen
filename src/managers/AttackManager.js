@@ -8,6 +8,8 @@ export const AttackManager = {
             GameManager.allowToMove = false;
             GameManager.currentAttack = Attack;
             GameManager.UIManager.UIAttackSelect.show()
+            if (GameManager.currentAttack.key != 'teleport')
+                GameManager.player.ui.showWeapon();
             const board = GameManager.board;
 
             board.clearHighlight();
@@ -15,11 +17,11 @@ export const AttackManager = {
 
             const targetable_cells = Attack.getTargetableCells(GameManager.player.getCurrentCell())
             targetable_cells.forEach(cell => {
-                board.HighlightCell(cell.boardX, cell.boardY, 0x00FF00)
+                board.HighlightCell(cell.boardX, cell.boardY, 0x00FF00, 'cell_hover')
             });
             GameManager.targetableCells = targetable_cells;
             AttackManager.CameraAttackMode(true);
-        }else{
+        } else {
             // show refuse behaivoir
         }
     },
@@ -30,6 +32,7 @@ export const AttackManager = {
         GameManager.board.clearHighlight()
         GameManager.UIManager.UIAttackBar.show()
         GameManager.UIManager.UIAttackSelect.hide()
+        GameManager.player.ui.hideWeapon();
         GameManager.AttackMode = false;
         GameManager.targetableCells = [];
         AttackManager.CameraAttackMode(false);

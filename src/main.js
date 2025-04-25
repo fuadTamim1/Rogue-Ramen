@@ -19,13 +19,20 @@ const config = {
     },
     boardCellSize: 64,
     scene: [
-        MainMenu,
         Game,
+        MainMenu,
     ],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
+    // plugins: {
+    //     global: [{
+    //         key: 'rexNineSlicePlugin',
+    //         plugin:  window.rexNineSlicePlugin,
+    //         start: true
+    //     }]
+    // }
 }
 
 new Phaser.Game(config);
